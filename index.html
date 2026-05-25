@@ -504,20 +504,34 @@ const MILESTONES = [
 ];
 
 // ===== GAME STATE =====
-let gameState = {
-  resources: { compute:0, data:0, energy:0, research:0 },
-  totalCompute:0, totalClicks:0, playtime:0,
-  owned:{}, genMultipliers:{}, completedResearch:[], activeResearch:null, researchProgress:0,
-  boughtUpgrades:[], clickMultiplier:1, globalMultiplier:1, dataMultiplier:1, energyBonus:0,
-  metaLearning:false, autoClick:false, dataMining:false, energyUnlocked:false,
-  prestigeCount:0, prestigeMultiplier:1,
-  metaLearningAge: 0,
-};
+function defaultState() {
+  return {
+    resources: { compute:0, data:0, energy:0, research:0 },
+    totalCompute:0, totalClicks:0, playtime:0,
+    owned:{}, genMultipliers:{}, completedResearch:[], activeResearch:null, researchProgress:0,
+    boughtUpgrades:[], clickMultiplier:1, globalMultiplier:1, dataMultiplier:1, energyBonus:0,
+    metaLearning:false, autoClick:false, dataMining:false, energyUnlocked:false,
+    prestigeCount:0, prestigeMultiplier:1, metaLearningAge:0,
+  };
+}
+let gameState = defaultState();
 
 function initState() {
+  // Ensure all numeric multipliers are valid numbers (never NaN/undefined)
+  if (!gameState.globalMultiplier || isNaN(gameState.globalMultiplier)) gameState.globalMultiplier = 1;
+  if (!gameState.prestigeMultiplier || isNaN(gameState.prestigeMultiplier)) gameState.prestigeMultiplier = 1;
+  if (!gameState.clickMultiplier || isNaN(gameState.clickMultiplier)) gameState.clickMultiplier = 1;
+  if (!gameState.dataMultiplier || isNaN(gameState.dataMultiplier)) gameState.dataMultiplier = 1;
+  if (isNaN(gameState.energyBonus)) gameState.energyBonus = 0;
+  if (isNaN(gameState.metaLearningAge)) gameState.metaLearningAge = 0;
+  if (!gameState.resources) gameState.resources = { compute:0, data:0, energy:0, research:0 };
+  if (!gameState.owned) gameState.owned = {};
+  if (!gameState.genMultipliers) gameState.genMultipliers = {};
+  if (!gameState.boughtUpgrades) gameState.boughtUpgrades = [];
+  if (!gameState.completedResearch) gameState.completedResearch = [];
   GENERATORS.forEach(g => {
-    if (!gameState.owned[g.id]) gameState.owned[g.id] = 0;
-    if (!gameState.genMultipliers[g.id]) gameState.genMultipliers[g.id] = 1;
+    if (!gameState.owned[g.id] || isNaN(gameState.owned[g.id])) gameState.owned[g.id] = 0;
+    if (!gameState.genMultipliers[g.id] || isNaN(gameState.genMultipliers[g.id])) gameState.genMultipliers[g.id] = 1;
   });
 }
 
@@ -525,10 +539,11 @@ function initState() {
 let db;
 function openDB() {
   return new Promise((res, rej) => {
-    const req = indexedDB.open('NeuralEmpireDB', 1);
+    const req = indexedDB.open('NeuralEmpireDB', 2);
     req.onupgradeneeded = e => {
       const d = e.target.result;
-      if (!d.objectStoreNames.contains('save')) d.createObjectStore('save');
+      if (d.objectStoreNames.contains('save')) d.deleteObjectStore('save');
+      d.createObjectStore('save');
     };
     req.onsuccess = e => { db = e.target.result; res(db); };
     req.onerror = () => rej(req.error);
@@ -546,9 +561,19 @@ function loadGame() {
     const req = tx.objectStore('save').get('state');
     req.onsuccess = () => {
       if (req.result) {
-        const saved = JSON.parse(req.result);
-        gameState = Object.assign(gameState, saved);
-        res(true);
+        try {
+          const saved = JSON.parse(req.result);
+          // Merge into fresh default state so no field is ever missing
+          const fresh = defaultState();
+          gameState = Object.assign(fresh, saved);
+          // Restore nested objects properly
+          gameState.resources = Object.assign({ compute:0, data:0, energy:0, research:0 }, saved.resources||{});
+          gameState.owned = saved.owned || {};
+          gameState.genMultipliers = saved.genMultipliers || {};
+          gameState.boughtUpgrades = saved.boughtUpgrades || [];
+          gameState.completedResearch = saved.completedResearch || [];
+          res(true);
+        } catch(e) { res(false); }
       } else res(false);
     };
     req.onerror = () => res(false);
@@ -567,14 +592,16 @@ function getOwned(id) { return gameState.owned[id]||0; }
 function getCost(gen, count) {
   return Math.ceil(gen.baseCost * Math.pow(gen.costMult, count));
 }
+function safeNum(n, fallback=1) { return (!n || isNaN(n)) ? fallback : n; }
+
 function getComputePS() {
   let total = 0;
   GENERATORS.forEach(g => {
-    total += (gameState.owned[g.id]||0) * g.baseCompute * (gameState.genMultipliers[g.id]||1);
+    total += safeNum(gameState.owned[g.id], 0) * g.baseCompute * safeNum(gameState.genMultipliers[g.id]);
   });
-  total *= gameState.globalMultiplier * gameState.prestigeMultiplier;
-  if (gameState.metaLearning) total *= (1 + gameState.metaLearningAge * 0.01);
-  return total;
+  total *= safeNum(gameState.globalMultiplier) * safeNum(gameState.prestigeMultiplier);
+  if (gameState.metaLearning) total *= (1 + safeNum(gameState.metaLearningAge, 0) * 0.01);
+  return isNaN(total) ? 0 : total;
 }
 function getDataPS() {
   let total = 0;
@@ -705,7 +732,7 @@ function renderGenerators() {
     const cost = getCost(gen, count);
     const affordable = gameState.resources.compute >= cost;
     const locked = totalOwned < gen.unlockAt;
-    const prod = count * gen.baseCompute * (gameState.genMultipliers[gen.id]||1) * gameState.globalMultiplier * gameState.prestigeMultiplier;
+    const prod = safeNum(count,0) * gen.baseCompute * safeNum(gameState.genMultipliers[gen.id]) * safeNum(gameState.globalMultiplier) * safeNum(gameState.prestigeMultiplier);
 
     let card = list.querySelector('[data-gen-id="' + gen.id + '"]');
     if (!card) {
@@ -893,7 +920,7 @@ function gameTick() {
   const eps = getEnergyPS();
   const rps = (Object.values(gameState.owned).reduce((a,b)=>a+b,0)) * 0.05 * gameState.prestigeMultiplier;
 
-  const earned = cps * dt;
+  const earned = isNaN(cps) ? 0 : cps * dt;
   gameState.resources.compute += earned;
   gameState.totalCompute += earned;
   gameState.resources.data += dps * dt;
