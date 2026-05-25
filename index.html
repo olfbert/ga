@@ -9,309 +9,156 @@
 <title>NeuralEmpire</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #050a0f;
-    --bg2: #0a1520;
-    --bg3: #0f1e2e;
-    --accent: #00d4ff;
-    --accent2: #7b2fff;
-    --accent3: #ff2f7b;
-    --gold: #ffd700;
-    --green: #00ff88;
-    --text: #c8e8f8;
-    --text2: #6a9ab8;
-    --border: rgba(0,212,255,0.2);
-    --glow: 0 0 20px rgba(0,212,255,0.3);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { height:100%; overflow:hidden; }
-  body {
-    font-family:'Share Tech Mono', monospace;
-    background: var(--bg);
-    color: var(--text);
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-  }
+:root {
+  --bg:#050a0f; --bg2:#0a1520; --bg3:#0f1e2e;
+  --accent:#00d4ff; --accent2:#7b2fff; --accent3:#ff2f7b;
+  --gold:#ffd700; --green:#00ff88; --text:#c8e8f8; --text2:#6a9ab8;
+  --border:rgba(0,212,255,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--text);user-select:none;-webkit-user-select:none;}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:430px;margin:0 auto;}
 
-  /* SCANLINE OVERLAY */
-  body::before {
-    content:'';
-    position:fixed; inset:0; z-index:9999; pointer-events:none;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
-    animation: flicker 8s infinite;
-  }
-  @keyframes flicker { 0%,95%,100%{opacity:1} 97%{opacity:0.92} }
+/* HEADER */
+header{background:linear-gradient(135deg,var(--bg2),var(--bg3));border-bottom:1px solid var(--border);padding:10px 16px 8px;flex-shrink:0;}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.game-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
+.resources{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.res-box{background:rgba(0,212,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 6px;text-align:center;}
+.res-box span{display:block;}
+.res-icon{font-size:14px;}
+.res-val{font-size:10px;color:var(--accent);font-weight:700;}
+.res-lbl{font-size:8px;color:var(--text2);}
 
-  /* LAYOUT */
-  #app { display:flex; flex-direction:column; height:100dvh; max-width:430px; margin:0 auto; position:relative; }
+/* NAV */
+nav{display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+nav button{background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);
+  padding:10px 4px;font-size:9px;cursor:pointer;font-family:'Share Tech Mono',monospace;
+  display:flex;flex-direction:column;align-items:center;gap:2px;transition:all 0.2s;}
+nav button .ti{font-size:18px;}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(0,212,255,0.07);}
 
-  /* HEADER */
-  header {
-    background: linear-gradient(135deg, var(--bg2), var(--bg3));
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px 8px;
-    flex-shrink: 0;
-  }
-  .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-  .game-title {
-    font-family:'Orbitron', sans-serif;
-    font-size:18px; font-weight:900;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: 2px;
-  }
-  .version { font-size:9px; color:var(--text2); }
-  .resources {
-    display:grid; grid-template-columns: repeat(4,1fr); gap:6px;
-  }
-  .res {
-    background: rgba(0,212,255,0.05);
-    border: 1px solid var(--border);
-    border-radius:6px; padding:4px 6px;
-    text-align:center;
-  }
-  .res-icon { font-size:14px; display:block; }
-  .res-val { font-size:10px; color:var(--accent); font-weight:700; }
-  .res-label { font-size:8px; color:var(--text2); }
+/* MAIN */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+main::-webkit-scrollbar{display:none;}
+.panel{display:none;padding:12px;animation:fadeIn 0.25s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-  /* TABS */
-  nav {
-    display:grid; grid-template-columns:repeat(5,1fr);
-    background: var(--bg2);
-    border-bottom:1px solid var(--border);
-    flex-shrink:0;
-  }
-  nav button {
-    background:none; border:none; color:var(--text2);
-    padding:10px 4px; font-size:9px; cursor:pointer;
-    font-family:'Share Tech Mono',monospace;
-    display:flex; flex-direction:column; align-items:center; gap:2px;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
-  }
-  nav button .tab-icon { font-size:18px; }
-  nav button.active { color:var(--accent); border-bottom-color:var(--accent); background:rgba(0,212,255,0.07); }
+/* SECTION TITLE */
+.stitle{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:3px;color:var(--text2);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  /* MAIN */
-  main { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
-  main::-webkit-scrollbar { display:none; }
+/* CLICK ZONE */
+.click-info{text-align:center;margin-bottom:8px;}
+.click-lbl{font-size:11px;color:var(--text2);}
+.click-pow{font-family:'Orbitron',sans-serif;font-size:20px;color:var(--accent);}
+#clickZone{position:relative;width:100%;aspect-ratio:1;max-width:260px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;}
+.ai-core{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1a3a5c,var(--bg));
+  border:2px solid var(--accent);box-shadow:0 0 40px rgba(0,212,255,0.3),inset 0 0 30px rgba(0,212,255,0.1);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  transition:transform 0.1s,box-shadow 0.1s;cursor:pointer;}
+.ai-core:active{transform:scale(0.94);box-shadow:0 0 60px rgba(0,212,255,0.5);}
+.ai-core-inner{font-size:72px;animation:pglow 3s ease-in-out infinite;filter:drop-shadow(0 0 12px var(--accent));}
+@keyframes pglow{0%,100%{filter:drop-shadow(0 0 8px var(--accent))}50%{filter:drop-shadow(0 0 24px var(--accent)) brightness(1.2)}}
+.orbit{position:absolute;border-radius:50%;border:1px solid rgba(0,212,255,0.2);animation:spin linear infinite;}
+.orbit1{width:200px;height:200px;animation-duration:8s;}
+.orbit2{width:230px;height:230px;animation-duration:12s;animation-direction:reverse;}
+.orbit3{width:255px;height:255px;animation-duration:20s;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orbit-dot{position:absolute;top:-3px;left:50%;width:6px;height:6px;border-radius:50%;
+  background:var(--accent);transform:translateX(-50%);box-shadow:0 0 8px var(--accent);}
+.floatie{position:fixed;pointer-events:none;z-index:1000;font-family:'Orbitron',sans-serif;
+  font-size:14px;font-weight:700;color:var(--accent);text-shadow:0 0 10px var(--accent);
+  animation:floatUp 1s ease forwards;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
 
-  /* TAB PANELS */
-  .panel { display:none; padding:12px; animation: fadeIn 0.3s ease; }
-  .panel.active { display:block; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+/* STAT CARDS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.stat-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;}
+.stat-icon{font-size:24px;margin-bottom:4px;}
+.stat-val{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--accent);margin-bottom:2px;}
+.stat-lbl{font-size:9px;color:var(--text2);}
 
-  /* SECTION TITLE */
-  .section-title {
-    font-family:'Orbitron',sans-serif;
-    font-size:11px; letter-spacing:3px; color:var(--text2);
-    margin-bottom:10px; text-transform:uppercase;
-    display:flex; align-items:center; gap:8px;
-  }
-  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+/* GENERATORS */
+.gen-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:8px;position:relative;overflow:hidden;cursor:pointer;}
+.gen-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.2s;}
+.gen-card.owned::before{opacity:1;}
+.gen-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.gen-name{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;}
+.gen-count{background:var(--accent);color:var(--bg);font-weight:900;font-size:11px;
+  padding:2px 8px;border-radius:20px;font-family:'Orbitron',sans-serif;min-width:32px;text-align:center;}
+.gen-desc{font-size:9px;color:var(--text2);margin-bottom:8px;}
+.gen-bot{display:flex;justify-content:space-between;align-items:center;}
+.gen-prod{font-size:10px;color:var(--green);}
+.gen-cost{background:rgba(0,212,255,0.1);border:1px solid var(--border);border-radius:6px;
+  padding:4px 10px;font-size:11px;color:var(--accent);font-family:'Orbitron',sans-serif;}
+.gen-card.can-buy .gen-cost{background:var(--accent);color:var(--bg);font-weight:700;box-shadow:0 0 10px var(--accent);}
+.gen-card.locked{opacity:0.4;cursor:default;}
+.gen-lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;}
 
-  /* CLICK ZONE */
-  #clickZone {
-    position:relative;
-    width:100%; aspect-ratio:1;
-    max-width:260px; margin:0 auto 16px;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-  }
-  .ai-core {
-    width:180px; height:180px;
-    border-radius:50%;
-    background: radial-gradient(circle at 35% 35%, #1a3a5c, var(--bg));
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 40px rgba(0,212,255,0.3), inset 0 0 30px rgba(0,212,255,0.1);
-    display:flex; align-items:center; justify-content:center;
-    position:relative; overflow:hidden;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  .ai-core:active { transform:scale(0.94); box-shadow: 0 0 60px rgba(0,212,255,0.5); }
-  .ai-core-inner {
-    font-size:72px; z-index:2;
-    animation: pulse-glow 3s ease-in-out infinite;
-    filter: drop-shadow(0 0 12px var(--accent));
-  }
-  @keyframes pulse-glow {
-    0%,100%{filter:drop-shadow(0 0 8px var(--accent))}
-    50%{filter:drop-shadow(0 0 24px var(--accent)) brightness(1.2)}
-  }
-  .orbit {
-    position:absolute; border-radius:50%;
-    border: 1px solid rgba(0,212,255,0.2);
-    animation: spin linear infinite;
-  }
-  .orbit1 { width:200px;height:200px; animation-duration:8s; }
-  .orbit2 { width:230px;height:230px; animation-duration:12s; animation-direction:reverse; }
-  .orbit3 { width:255px;height:255px; animation-duration:20s; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  .orbit-dot {
-    position:absolute; top:-3px; left:50%;
-    width:6px;height:6px; border-radius:50%;
-    background:var(--accent); transform:translateX(-50%);
-    box-shadow: 0 0 8px var(--accent);
-  }
-  .click-info { text-align:center; margin-bottom:8px; }
-  .click-label { font-size:11px; color:var(--text2); }
-  .click-power { font-family:'Orbitron',sans-serif; font-size:20px; color:var(--accent); }
+/* UPGRADES */
+.upg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.upg-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);
+  border-radius:10px;padding:10px;cursor:pointer;transition:border-color 0.2s;}
+.upg-card.can-buy{border-color:rgba(123,47,255,0.6);}
+.upg-card.bought{border-color:var(--green);opacity:0.6;cursor:default;}
+.upg-icon{font-size:28px;margin-bottom:4px;}
+.upg-name{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;margin-bottom:3px;}
+.upg-desc{font-size:8px;color:var(--text2);margin-bottom:6px;line-height:1.3;}
+.upg-cost{font-size:10px;color:var(--accent2);}
+.upg-card.bought .upg-cost{color:var(--green);}
 
-  /* CLICK FLOATIES */
-  .floatie {
-    position:fixed; pointer-events:none; z-index:1000;
-    font-family:'Orbitron',sans-serif; font-size:14px; font-weight:700;
-    color:var(--accent); text-shadow: 0 0 10px var(--accent);
-    animation: floatUp 1s ease forwards;
-  }
-  @keyframes floatUp {
-    0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)}
-  }
+/* RESEARCH */
+.res-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;}
+.res-card.active-res{border-color:var(--gold);}
+.res-card.done-res{border-color:var(--green);opacity:0.7;cursor:default;}
+.res-card.can-res{border-color:rgba(123,47,255,0.5);}
+.res-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.res-name{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;}
+.res-badge{font-size:8px;padding:2px 8px;border-radius:20px;border:1px solid;}
+.badge-done{color:var(--green);border-color:var(--green);}
+.badge-active{color:var(--gold);border-color:var(--gold);}
+.badge-avail{color:var(--accent2);border-color:var(--accent2);}
+.badge-locked{color:var(--text2);border-color:var(--text2);}
+.res-desc{font-size:9px;color:var(--text2);margin-bottom:8px;line-height:1.4;}
+.pbar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width 0.3s;}
+.res-info{display:flex;justify-content:space-between;font-size:9px;margin-top:4px;}
 
-  /* GENERATORS */
-  .gen-list { display:flex; flex-direction:column; gap:8px; }
-  .gen-card {
-    background: linear-gradient(135deg, var(--bg2), var(--bg3));
-    border: 1px solid var(--border);
-    border-radius:10px; padding:12px;
-    position:relative; overflow:hidden;
-    transition: border-color 0.2s;
-  }
-  .gen-card::before {
-    content:''; position:absolute; top:0;left:0;right:0; height:2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    opacity:0; transition:opacity 0.2s;
-  }
-  .gen-card.owned::before { opacity:1; }
-  .gen-card.affordable { border-color: rgba(0,212,255,0.5); cursor:pointer; }
-  .gen-card.affordable:active { transform:scale(0.98); }
-  .gen-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-  .gen-name { font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; }
-  .gen-count {
-    background:var(--accent); color:var(--bg);
-    font-weight:900; font-size:11px;
-    padding:2px 8px; border-radius:20px;
-    font-family:'Orbitron',sans-serif;
-    min-width:32px; text-align:center;
-  }
-  .gen-desc { font-size:9px; color:var(--text2); margin-bottom:8px; }
-  .gen-bottom { display:flex; justify-content:space-between; align-items:center; }
-  .gen-production { font-size:10px; color:var(--green); }
-  .gen-cost {
-    background: rgba(0,212,255,0.1);
-    border: 1px solid var(--border);
-    border-radius:6px; padding:4px 10px;
-    font-size:11px; color:var(--accent);
-    font-family:'Orbitron',sans-serif;
-    transition: all 0.2s;
-  }
-  .gen-card.affordable .gen-cost {
-    background:var(--accent); color:var(--bg); font-weight:700;
-    box-shadow: 0 0 10px var(--accent);
-  }
-  .gen-card.locked { opacity:0.4; }
-  .gen-lock { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; }
+/* PRESTIGE */
+.prestige-box{background:linear-gradient(135deg,rgba(123,47,255,0.1),rgba(255,47,123,0.1));
+  border:1px solid rgba(123,47,255,0.4);border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;}
+.prestige-title{font-family:'Orbitron',sans-serif;font-size:16px;color:var(--accent2);margin-bottom:6px;}
+.prestige-desc{font-size:10px;color:var(--text2);margin-bottom:12px;line-height:1.5;}
+.prestige-reward{font-size:12px;color:var(--gold);margin-bottom:12px;}
+.prestige-btn{background:linear-gradient(135deg,var(--accent2),var(--accent3));border:none;border-radius:8px;
+  padding:12px 24px;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:white;
+  cursor:pointer;width:100%;box-shadow:0 4px 20px rgba(123,47,255,0.4);}
 
-  /* UPGRADES */
-  .upgrade-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .upg-card {
-    background: linear-gradient(135deg, var(--bg2), var(--bg3));
-    border: 1px solid var(--border);
-    border-radius:10px; padding:10px;
-    transition: all 0.2s; cursor:pointer;
-  }
-  .upg-card.affordable { border-color:rgba(123,47,255,0.6); }
-  .upg-card.affordable:active { transform:scale(0.97); }
-  .upg-card.bought { border-color:var(--green); opacity:0.6; }
-  .upg-icon { font-size:28px; margin-bottom:4px; }
-  .upg-name { font-family:'Orbitron',sans-serif; font-size:10px; font-weight:700; margin-bottom:3px; }
-  .upg-desc { font-size:8px; color:var(--text2); margin-bottom:6px; line-height:1.3; }
-  .upg-cost { font-size:10px; color:var(--accent2); }
-  .upg-card.bought .upg-cost { color:var(--green); }
+/* MILESTONES */
+.milestone{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;font-size:10px;margin-bottom:6px;}
+.milestone.done{border-color:var(--gold);}
 
-  /* RESEARCH */
-  .research-list { display:flex; flex-direction:column; gap:8px; }
-  .res-card {
-    background: linear-gradient(135deg, var(--bg2), var(--bg3));
-    border: 1px solid var(--border);
-    border-radius:10px; padding:12px;
-    cursor:pointer; transition:all 0.2s;
-  }
-  .res-card.researching { border-color:var(--gold); }
-  .res-card.done { border-color:var(--green); opacity:0.7; }
-  .res-card:not(.done):not(.researching).affordable { border-color:rgba(123,47,255,0.6); }
-  .res-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
-  .res-name { font-family:'Orbitron',sans-serif; font-size:11px; font-weight:700; }
-  .res-badge {
-    font-size:8px; padding:2px 8px; border-radius:20px;
-    border:1px solid;
-  }
-  .res-badge.done { color:var(--green); border-color:var(--green); }
-  .res-badge.researching { color:var(--gold); border-color:var(--gold); }
-  .res-badge.available { color:var(--accent2); border-color:var(--accent2); }
-  .res-badge.locked { color:var(--text2); border-color:var(--text2); }
-  .res-desc { font-size:9px; color:var(--text2); margin-bottom:8px; line-height:1.4; }
-  .progress-bar { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
-  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); border-radius:2px; transition:width 0.3s; }
-  .res-info { display:flex; justify-content:space-between; font-size:9px; margin-top:4px; }
-
-  /* STATS */
-  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
-  .stat-card {
-    background: linear-gradient(135deg, var(--bg2), var(--bg3));
-    border: 1px solid var(--border);
-    border-radius:10px; padding:12px; text-align:center;
-  }
-  .stat-icon { font-size:24px; margin-bottom:4px; }
-  .stat-val { font-family:'Orbitron',sans-serif; font-size:14px; color:var(--accent); margin-bottom:2px; }
-  .stat-label { font-size:9px; color:var(--text2); }
-  .milestone-list { display:flex; flex-direction:column; gap:6px; }
-  .milestone {
-    display:flex; align-items:center; gap:10px;
-    background:var(--bg2); border:1px solid var(--border);
-    border-radius:8px; padding:8px 12px;
-    font-size:10px;
-  }
-  .milestone.done { border-color:var(--gold); }
-  .milestone-icon { font-size:18px; }
-  .milestone-text { flex:1; }
-  .milestone-check { color:var(--gold); font-size:14px; }
-
-  /* NOTIFICATION */
-  #notification {
-    position:fixed; top:20px; left:50%; transform:translateX(-50%);
-    background:linear-gradient(135deg,var(--bg2),var(--bg3));
-    border:1px solid var(--accent); border-radius:10px;
-    padding:10px 20px; font-size:12px; color:var(--accent);
-    box-shadow:0 4px 20px rgba(0,212,255,0.3);
-    z-index:10000; opacity:0; pointer-events:none;
-    transition:opacity 0.3s, transform 0.3s;
-    text-align:center; white-space:nowrap;
-    font-family:'Orbitron',sans-serif;
-  }
-  #notification.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-  /* PRESTIGE */
-  .prestige-box {
-    background: linear-gradient(135deg, rgba(123,47,255,0.1), rgba(255,47,123,0.1));
-    border: 1px solid rgba(123,47,255,0.4);
-    border-radius:12px; padding:16px; text-align:center; margin-bottom:16px;
-  }
-  .prestige-title { font-family:'Orbitron',sans-serif; font-size:16px; color:var(--accent2); margin-bottom:6px; }
-  .prestige-desc { font-size:10px; color:var(--text2); margin-bottom:12px; line-height:1.5; }
-  .prestige-reward { font-size:12px; color:var(--gold); margin-bottom:12px; }
-  .prestige-btn {
-    background:linear-gradient(135deg,var(--accent2),var(--accent3));
-    border:none; border-radius:8px; padding:12px 24px;
-    font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700;
-    color:white; cursor:pointer; width:100%;
-    box-shadow:0 4px 20px rgba(123,47,255,0.4);
-  }
-  .prestige-btn:disabled { opacity:0.3; cursor:not-allowed; }
-
-  /* SCROLL PADDING */
-  .scroll-pad { height:20px; }
+/* NOTIFICATION */
+#notif{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-10px);
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--accent);
+  border-radius:10px;padding:10px 20px;font-size:12px;color:var(--accent);
+  box-shadow:0 4px 20px rgba(0,212,255,0.3);z-index:10000;opacity:0;pointer-events:none;
+  transition:opacity 0.3s,transform 0.3s;text-align:center;white-space:nowrap;
+  font-family:'Orbitron',sans-serif;}
+#notif.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.pad{height:20px;}
 </style>
 </head>
 <body>
@@ -319,653 +166,531 @@
   <header>
     <div class="header-top">
       <div class="game-title">NEURAL EMPIRE</div>
-      <div class="version" id="prestigeDisplay">Prestige 0 ⭐</div>
+      <div style="font-size:9px;color:var(--text2)" id="hdPrestige">Prestige 0 ⭐</div>
     </div>
     <div class="resources">
-      <div class="res">
-        <span class="res-icon">🧠</span>
-        <span class="res-val" id="res-compute">0</span>
-        <span class="res-label">COMPUTE</span>
-      </div>
-      <div class="res">
-        <span class="res-icon">📊</span>
-        <span class="res-val" id="res-data">0</span>
-        <span class="res-label">DATA</span>
-      </div>
-      <div class="res">
-        <span class="res-icon">⚡</span>
-        <span class="res-val" id="res-energy">0</span>
-        <span class="res-label">ENERGY</span>
-      </div>
-      <div class="res">
-        <span class="res-icon">🔬</span>
-        <span class="res-val" id="res-research">0</span>
-        <span class="res-label">RESEARCH</span>
-      </div>
+      <div class="res-box"><span class="res-icon">🧠</span><span class="res-val" id="hCompute">0</span><span class="res-lbl">COMPUTE</span></div>
+      <div class="res-box"><span class="res-icon">📊</span><span class="res-val" id="hData">0</span><span class="res-lbl">DATA</span></div>
+      <div class="res-box"><span class="res-icon">⚡</span><span class="res-val" id="hEnergy">?</span><span class="res-lbl">ENERGY</span></div>
+      <div class="res-box"><span class="res-icon">🔬</span><span class="res-val" id="hResearch">0</span><span class="res-lbl">RESEARCH</span></div>
     </div>
   </header>
 
-  <nav>
-    <button class="active" onclick="switchTab('core', this)">
-      <span class="tab-icon">🤖</span>CORE
-    </button>
-    <button onclick="switchTab('generators', this)">
-      <span class="tab-icon">⚙️</span>BUILD
-    </button>
-    <button onclick="switchTab('upgrades', this)">
-      <span class="tab-icon">🔼</span>UPGS
-    </button>
-    <button onclick="switchTab('research', this)">
-      <span class="tab-icon">🔬</span>R&amp;D
-    </button>
-    <button onclick="switchTab('stats', this)">
-      <span class="tab-icon">📈</span>STATS
-    </button>
+  <nav id="mainNav">
+    <button class="active" data-tab="core"><span class="ti">🤖</span>CORE</button>
+    <button data-tab="build"><span class="ti">⚙️</span>BUILD</button>
+    <button data-tab="upgrades"><span class="ti">🔼</span>UPGS</button>
+    <button data-tab="research"><span class="ti">🔬</span>R&amp;D</button>
+    <button data-tab="stats"><span class="ti">📈</span>STATS</button>
   </nav>
 
   <main>
-    <!-- CORE TAB -->
-    <div id="tab-core" class="panel active">
+    <!-- CORE -->
+    <div class="panel active" id="tab-core">
       <div class="click-info">
-        <div class="click-label">COMPUTE PRO KLICK</div>
-        <div class="click-power" id="clickPower">+1 🧠</div>
+        <div class="click-lbl">COMPUTE PRO KLICK</div>
+        <div class="click-pow" id="uClickPow">+1 🧠</div>
       </div>
       <div id="clickZone">
         <div class="orbit orbit1"><div class="orbit-dot"></div></div>
         <div class="orbit orbit2"><div class="orbit-dot"></div></div>
         <div class="orbit orbit3"><div class="orbit-dot"></div></div>
-        <div class="ai-core" id="aiCore" onclick="handleClick(event)">
+        <div class="ai-core" id="aiCore">
           <div class="ai-core-inner" id="coreEmoji">🤖</div>
         </div>
       </div>
-      <div class="section-title">PRODUKTION / SEK</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="stat-card">
-          <div style="font-size:20px">⚡</div>
-          <div class="stat-val" id="cps-compute" style="font-size:13px">0/s</div>
-          <div class="stat-label">COMPUTE/s</div>
-        </div>
-        <div class="stat-card">
-          <div style="font-size:20px">📊</div>
-          <div class="stat-val" id="cps-data" style="font-size:13px">0/s</div>
-          <div class="stat-label">DATA/s</div>
-        </div>
+      <div class="two-col">
+        <div class="stat-card"><div style="font-size:20px">⚡</div><div class="stat-val" id="uCPS">0/s</div><div class="stat-lbl">COMPUTE/s</div></div>
+        <div class="stat-card"><div style="font-size:20px">📊</div><div class="stat-val" id="uDPS">0/s</div><div class="stat-lbl">DATA/s</div></div>
       </div>
-      <div class="section-title">KI EVOLUTION</div>
-      <div id="evolutionDisplay" style="font-size:10px;color:var(--text2);margin-bottom:8px;line-height:1.6;">
-        Deine KI befindet sich noch in den Anfängen. Klicke und sammle Ressourcen um sie zu entwickeln!
+      <div class="stitle">KI EVOLUTION</div>
+      <div id="uEvoText" style="font-size:10px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+        Deine KI befindet sich noch in den Anfängen. Klicke um Ressourcen zu sammeln!
       </div>
-      <div class="prestige-box" id="prestigeBox" style="display:none">
+      <div id="prestigeBox" style="display:none" class="prestige-box">
         <div class="prestige-title">⭐ NEUSTART</div>
-        <div class="prestige-desc">Setze alles zurück und erhalte permanente Boni die mit jedem Neustart wachsen!</div>
-        <div class="prestige-reward" id="prestigeReward">+25% globale Produktion</div>
-        <button class="prestige-btn" id="prestigeBtn" onclick="doPrestige()">NEUSTART DURCHFÜHREN</button>
+        <div class="prestige-desc">Setze alles zurück und erhalte permanente Produktionsboni!</div>
+        <div class="prestige-reward" id="uPrestigeReward">+25% globale Produktion</div>
+        <button class="prestige-btn" onclick="doPrestige()">NEUSTART DURCHFÜHREN</button>
       </div>
     </div>
 
-    <!-- GENERATORS TAB -->
-    <div id="tab-generators" class="panel">
-      <div class="section-title">KI SYSTEME</div>
-      <div class="gen-list" id="genList"></div>
-      <div class="scroll-pad"></div>
+    <!-- BUILD -->
+    <div class="panel" id="tab-build">
+      <div class="stitle">KI SYSTEME</div>
+      <div id="genList"></div>
+      <div class="pad"></div>
     </div>
 
-    <!-- UPGRADES TAB -->
-    <div id="tab-upgrades" class="panel">
-      <div class="section-title">VERBESSERUNGEN</div>
-      <div class="upgrade-grid" id="upgradeGrid"></div>
-      <div class="scroll-pad"></div>
+    <!-- UPGRADES -->
+    <div class="panel" id="tab-upgrades">
+      <div class="stitle">VERBESSERUNGEN</div>
+      <div class="upg-grid" id="upgGrid"></div>
+      <div class="pad"></div>
     </div>
 
-    <!-- RESEARCH TAB -->
-    <div id="tab-research" class="panel">
-      <div class="section-title">FORSCHUNG</div>
-      <div class="research-list" id="researchList"></div>
-      <div class="scroll-pad"></div>
+    <!-- RESEARCH -->
+    <div class="panel" id="tab-research">
+      <div class="stitle">FORSCHUNG</div>
+      <div id="resList"></div>
+      <div class="pad"></div>
     </div>
 
-    <!-- STATS TAB -->
-    <div id="tab-stats" class="panel">
-      <div class="section-title">STATISTIKEN</div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">🖱️</div>
-          <div class="stat-val" id="stat-clicks">0</div>
-          <div class="stat-label">KLICKS GESAMT</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🧠</div>
-          <div class="stat-val" id="stat-totalCompute">0</div>
-          <div class="stat-label">COMPUTE GESAMT</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">⏱️</div>
-          <div class="stat-val" id="stat-playtime">0m</div>
-          <div class="stat-label">SPIELZEIT</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-val" id="stat-prestige">0</div>
-          <div class="stat-label">PRESTIGES</div>
-        </div>
+    <!-- STATS -->
+    <div class="panel" id="tab-stats">
+      <div class="stitle">STATISTIKEN</div>
+      <div class="two-col">
+        <div class="stat-card"><div class="stat-icon">🖱️</div><div class="stat-val" id="sClicks">0</div><div class="stat-lbl">KLICKS GESAMT</div></div>
+        <div class="stat-card"><div class="stat-icon">🧠</div><div class="stat-val" id="sTotalC">0</div><div class="stat-lbl">COMPUTE GESAMT</div></div>
+        <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-val" id="sTime">0m</div><div class="stat-lbl">SPIELZEIT</div></div>
+        <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val" id="sPrestige">0</div><div class="stat-lbl">PRESTIGES</div></div>
       </div>
-      <div class="section-title">MEILENSTEINE</div>
-      <div class="milestone-list" id="milestoneList"></div>
-      <div class="scroll-pad"></div>
+      <div class="stitle">MEILENSTEINE</div>
+      <div id="milestoneList"></div>
+      <div class="pad"></div>
     </div>
   </main>
 </div>
-
-<div id="notification"></div>
+<div id="notif"></div>
 
 <script>
-// ===== GAME DATA =====
-const GENERATORS = [
-  { id:'nano', name:'Nano-KI', emoji:'🔵', desc:'Winzige KI-Chips die grundlegende Berechnungen durchführen', baseCost:15, costMult:1.15, baseCompute:0.1, baseData:0, baseEnergy:0, unlockAt:0 },
-  { id:'neural', name:'Neural Net', emoji:'🟣', desc:'Selbstlernende Netzwerke die Muster in Daten erkennen', baseCost:100, costMult:1.15, baseCompute:0.5, baseData:0.1, baseEnergy:0, unlockAt:1 },
-  { id:'gpu_farm', name:'GPU-Farm', emoji:'🟡', desc:'Massiv parallele Grafikprozessoren für Deep Learning', baseCost:1100, costMult:1.15, baseCompute:4, baseData:0.5, baseEnergy:-0.1, unlockAt:5 },
-  { id:'datacenter', name:'Rechenzentrum', emoji:'🔴', desc:'Hochleistungs-Server für großskalige KI-Modelle', baseCost:12000, costMult:1.15, baseCompute:20, baseData:3, baseEnergy:-0.5, unlockAt:20 },
-  { id:'quantum', name:'Quanten-Prozessor', emoji:'⚪', desc:'Nutzt Quantenüberlagung für exponentiell schnellere Berechnungen', baseCost:130000, costMult:1.15, baseCompute:100, baseData:15, baseEnergy:-2, unlockAt:50 },
-  { id:'agi_core', name:'AGI-Kern', emoji:'🟠', desc:'Artificial General Intelligence — übertrifft menschliche Intelligenz', baseCost:1400000, costMult:1.15, baseCompute:600, baseData:80, baseEnergy:-10, unlockAt:100 },
-  { id:'singularity', name:'Singularität', emoji:'🌟', desc:'Technologische Singularität — unkontrollierbare Superintelligenz', baseCost:20000000, costMult:1.15, baseCompute:4000, baseData:500, baseEnergy:-60, unlockAt:200 },
+// ============================================================
+// DATA
+// ============================================================
+const GENS = [
+  {id:'nano',   name:'Nano-KI',        emoji:'🔵', desc:'Winzige KI-Chips für grundlegende Berechnungen',          baseCost:15,       mult:1.15, cps:0.1,   unlockAt:0},
+  {id:'neural', name:'Neural Net',     emoji:'🟣', desc:'Selbstlernende Netzwerke die Muster erkennen',           baseCost:100,      mult:1.15, cps:0.5,   unlockAt:1},
+  {id:'gpu',    name:'GPU-Farm',       emoji:'🟡', desc:'Massiv parallele GPUs für Deep Learning',                baseCost:1100,     mult:1.15, cps:4,     unlockAt:5},
+  {id:'dc',     name:'Rechenzentrum',  emoji:'🔴', desc:'Hochleistungs-Server für großskalige Modelle',           baseCost:12000,    mult:1.15, cps:20,    unlockAt:20},
+  {id:'quantum',name:'Quanten-Chip',   emoji:'⚪', desc:'Nutzt Quanteneffekte für exponentielle Geschwindigkeit', baseCost:130000,   mult:1.15, cps:100,   unlockAt:50},
+  {id:'agi',    name:'AGI-Kern',       emoji:'🟠', desc:'Artificial General Intelligence — übertrifft Menschen',  baseCost:1400000,  mult:1.15, cps:600,   unlockAt:100},
+  {id:'sing',   name:'Singularität',   emoji:'🌟', desc:'Technologische Singularität — Superintelligenz',         baseCost:20000000, mult:1.15, cps:4000,  unlockAt:200},
 ];
 
 const UPGRADES = [
-  { id:'click1', name:'Bessere Maus', emoji:'🖱️', desc:'Klick-Compute ×2', cost:50, effect:()=>{ gameState.clickMultiplier*=2; }, req:()=>true },
-  { id:'click2', name:'Turbo-Klick', emoji:'⚡', desc:'Klick-Compute ×3', cost:500, effect:()=>{ gameState.clickMultiplier*=3; }, req:()=>gameState.totalCompute>=200 },
-  { id:'nano1', name:'Nano-Optimierung', emoji:'🔵', desc:'Nano-KI ×2 Produktion', cost:200, effect:()=>{ gameState.genMultipliers.nano*=2; }, req:()=>getOwned('nano')>=5 },
-  { id:'neural1', name:'Tiefes Lernen', emoji:'🧠', desc:'Neural Net ×2 Produktion', cost:2000, effect:()=>{ gameState.genMultipliers.neural*=2; }, req:()=>getOwned('neural')>=5 },
-  { id:'gpu1', name:'CUDA-Optimierung', emoji:'💾', desc:'GPU-Farm ×2 Produktion', cost:20000, effect:()=>{ gameState.genMultipliers.gpu_farm*=2; }, req:()=>getOwned('gpu_farm')>=5 },
-  { id:'data1', name:'Big Data', emoji:'📊', desc:'Globale Datenproduktion ×2', cost:5000, effect:()=>{ gameState.dataMultiplier*=2; }, req:()=>gameState.resources.data>=100 },
-  { id:'energy1', name:'Solar Arrays', emoji:  '☀️', desc:'Energie-Rückkehr +50%', cost:8000, effect:()=>{ gameState.energyBonus+=0.5; }, req:()=>getOwned('gpu_farm')>=3 },
-  { id:'dc1', name:'Fiber-Netz', emoji:'🌐', desc:'Rechenzentrum ×2 Produktion', cost:200000, effect:()=>{ gameState.genMultipliers.datacenter*=2; }, req:()=>getOwned('datacenter')>=5 },
-  { id:'quantum1', name:'Quantenverschränkung', emoji:'⚛️', desc:'Quanten-Prozessor ×3 Produktion', cost:2000000, effect:()=>{ gameState.genMultipliers.quantum*=3; }, req:()=>getOwned('quantum')>=5 },
-  { id:'global1', name:'KI-Synergie', emoji:'🤝', desc:'Alle Generatoren +50%', cost:500000, effect:()=>{ gameState.globalMultiplier*=1.5; }, req:()=>gameState.totalCompute>=100000 },
+  {id:'u_c1', name:'Bessere Maus',       emoji:'🖱️', desc:'Klick ×2',                    cost:50,      req:s=>true,                     fn:s=>{s.clickMul*=2;}},
+  {id:'u_c2', name:'Turbo-Klick',        emoji:'⚡', desc:'Klick ×3',                    cost:500,     req:s=>s.totalC>=200,            fn:s=>{s.clickMul*=3;}},
+  {id:'u_n1', name:'Nano-Opt',           emoji:'🔵', desc:'Nano-KI ×2',                  cost:200,     req:s=>(s.owned.nano||0)>=5,     fn:s=>{s.gm.nano=(s.gm.nano||1)*2;}},
+  {id:'u_nn1',name:'Tiefes Lernen',      emoji:'🧠', desc:'Neural Net ×2',               cost:2000,    req:s=>(s.owned.neural||0)>=5,   fn:s=>{s.gm.neural=(s.gm.neural||1)*2;}},
+  {id:'u_g1', name:'CUDA-Opt',           emoji:'💾', desc:'GPU-Farm ×2',                 cost:20000,   req:s=>(s.owned.gpu||0)>=5,      fn:s=>{s.gm.gpu=(s.gm.gpu||1)*2;}},
+  {id:'u_d1', name:'Big Data',           emoji:'📊', desc:'Globale Datenproduktion ×2',  cost:5000,    req:s=>s.totalC>=1000,           fn:s=>{s.dataMul*=2;}},
+  {id:'u_dc1',name:'Fiber-Netz',         emoji:'🌐', desc:'Rechenzentrum ×2',             cost:200000,  req:s=>(s.owned.dc||0)>=5,       fn:s=>{s.gm.dc=(s.gm.dc||1)*2;}},
+  {id:'u_q1', name:'Verschränkung',      emoji:'⚛️', desc:'Quanten-Chip ×3',             cost:2000000, req:s=>(s.owned.quantum||0)>=5,  fn:s=>{s.gm.quantum=(s.gm.quantum||1)*3;}},
+  {id:'u_gl1',name:'KI-Synergie',        emoji:'🤝', desc:'Alle Generatoren +50%',       cost:500000,  req:s=>s.totalC>=100000,         fn:s=>{s.globalMul*=1.5;}},
 ];
 
-const RESEARCH_ITEMS = [
-  { id:'r_autoclick', name:'Auto-Klicker', emoji:'🤖', desc:'Automatisch 1 Klick/Sekunde', cost:500, time:30, effect:()=>{ gameState.autoClick=true; }, req:()=>true },
-  { id:'r_datamine', name:'Data Mining', emoji:'⛏️', desc:'Compute wird auch zu Data konvertiert (+10%)', cost:2000, time:60, effect:()=>{ gameState.dataMining=true; }, req:()=>gameState.resources.compute>=500 },
-  { id:'r_energy_gen', name:'Energie-Rückgewinnung', emoji:'⚡', desc:'Schaltet Energie-Ressource frei', cost:5000, time:120, effect:()=>{ gameState.energyUnlocked=true; }, req:()=>getOwned('gpu_farm')>=1 },
-  { id:'r_ml_boost', name:'Meta-Learning', emoji:'🧬', desc:'KI verbessert sich selbst: +1% Produktion/Minute', cost:20000, time:180, effect:()=>{ gameState.metaLearning=true; }, req:()=>getOwned('neural')>=10 },
-  { id:'r_quantum_comp', name:'Quantum Supremacy', emoji:'⚛️', desc:'Globale Multiplikator ×1.5', cost:100000, time:300, effect:()=>{ gameState.globalMultiplier*=1.5; }, req:()=>getOwned('quantum')>=1 },
-  { id:'r_agi', name:'AGI Alignment', emoji:'🎯', desc:'AGI-Kern Produktion ×5', cost:500000, time:600, effect:()=>{ gameState.genMultipliers.agi_core*=5; }, req:()=>getOwned('agi_core')>=1 },
+const RESEARCH = [
+  {id:'r_auto', name:'Auto-Klicker',    emoji:'🤖', desc:'1 automatischer Klick/Sek',              cost:500,   time:30,  req:s=>true,                    fn:s=>{s.autoClick=true;}},
+  {id:'r_data', name:'Data Mining',     emoji:'⛏️', desc:'Compute wird zu 10% in Data konvertiert', cost:2000,  time:60,  req:s=>s.totalC>=500,           fn:s=>{s.dataMining=true;}},
+  {id:'r_meta', name:'Meta-Learning',   emoji:'🧬', desc:'+1% Produktion pro Spielminute',           cost:20000, time:180, req:s=>(s.owned.neural||0)>=10, fn:s=>{s.metaLearn=true;}},
+  {id:'r_qsup', name:'Quantum Supremacy',emoji:'⚛️',desc:'Globaler Multiplikator ×1.5',             cost:100000,time:300, req:s=>(s.owned.quantum||0)>=1, fn:s=>{s.globalMul*=1.5;}},
+  {id:'r_align',name:'AGI Alignment',   emoji:'🎯', desc:'AGI-Kern ×5',                             cost:500000,time:600, req:s=>(s.owned.agi||0)>=1,     fn:s=>{s.gm.agi=(s.gm.agi||1)*5;}},
 ];
 
 const MILESTONES = [
-  { id:'m_first_click', text:'Erste Berechnung durchgeführt', req:s=>s.totalClicks>=1 },
-  { id:'m_100compute', text:'100 Compute gesammelt', req:s=>s.totalCompute>=100 },
-  { id:'m_first_gen', text:'Ersten Generator gebaut', req:s=>Object.values(s.owned).some(v=>v>0) },
-  { id:'m_1000compute', text:'1.000 Compute gesammelt', req:s=>s.totalCompute>=1000 },
-  { id:'m_10gens', text:'10 Generatoren aktiv', req:s=>Object.values(s.owned).reduce((a,b)=>a+b,0)>=10 },
-  { id:'m_first_research', text:'Erste Forschung abgeschlossen', req:s=>s.completedResearch.length>=1 },
-  { id:'m_1mcompute', text:'1 Million Compute gesammelt', req:s=>s.totalCompute>=1000000 },
-  { id:'m_prestige1', text:'Ersten Neustart durchgeführt', req:s=>s.prestigeCount>=1 },
+  {id:'m1', text:'Erste Berechnung',         req:s=>s.totalClicks>=1},
+  {id:'m2', text:'100 Compute gesammelt',    req:s=>s.totalC>=100},
+  {id:'m3', text:'Ersten Generator gebaut',  req:s=>Object.values(s.owned).some(v=>v>0)},
+  {id:'m4', text:'1.000 Compute gesammelt',  req:s=>s.totalC>=1000},
+  {id:'m5', text:'10 Generatoren aktiv',     req:s=>Object.values(s.owned).reduce((a,b)=>a+b,0)>=10},
+  {id:'m6', text:'Erste Forschung fertig',   req:s=>s.doneRes.length>=1},
+  {id:'m7', text:'1 Million Compute',        req:s=>s.totalC>=1e6},
+  {id:'m8', text:'Erster Neustart',          req:s=>s.prestige>=1},
 ];
 
-// ===== GAME STATE =====
-function defaultState() {
+// ============================================================
+// STATE  (all numbers, no undefined)
+// ============================================================
+function freshState() {
   return {
-    resources: { compute:0, data:0, energy:0, research:0 },
-    totalCompute:0, totalClicks:0, playtime:0,
-    owned:{}, genMultipliers:{}, completedResearch:[], activeResearch:null, researchProgress:0,
-    boughtUpgrades:[], clickMultiplier:1, globalMultiplier:1, dataMultiplier:1, energyBonus:0,
-    metaLearning:false, autoClick:false, dataMining:false, energyUnlocked:false,
-    prestigeCount:0, prestigeMultiplier:1, metaLearningAge:0,
+    compute:0, data:0, energy:0, research:0,
+    totalC:0, totalClicks:0, playtime:0,
+    owned:{nano:0,neural:0,gpu:0,dc:0,quantum:0,agi:0,sing:0},
+    gm:   {nano:1,neural:1,gpu:1,dc:1,quantum:1,agi:1,sing:1},
+    clickMul:1, globalMul:1, dataMul:1,
+    autoClick:false, dataMining:false, metaLearn:false,
+    metaAge:0,
+    prestige:0, prestigeMul:1,
+    boughtUpg:[], doneRes:[], activeRes:null, resProgress:0,
   };
 }
-let gameState = defaultState();
+let S = freshState();
 
-function initState() {
-  // Ensure all numeric multipliers are valid numbers (never NaN/undefined)
-  if (!gameState.globalMultiplier || isNaN(gameState.globalMultiplier)) gameState.globalMultiplier = 1;
-  if (!gameState.prestigeMultiplier || isNaN(gameState.prestigeMultiplier)) gameState.prestigeMultiplier = 1;
-  if (!gameState.clickMultiplier || isNaN(gameState.clickMultiplier)) gameState.clickMultiplier = 1;
-  if (!gameState.dataMultiplier || isNaN(gameState.dataMultiplier)) gameState.dataMultiplier = 1;
-  if (isNaN(gameState.energyBonus)) gameState.energyBonus = 0;
-  if (isNaN(gameState.metaLearningAge)) gameState.metaLearningAge = 0;
-  if (!gameState.resources) gameState.resources = { compute:0, data:0, energy:0, research:0 };
-  if (!gameState.owned) gameState.owned = {};
-  if (!gameState.genMultipliers) gameState.genMultipliers = {};
-  if (!gameState.boughtUpgrades) gameState.boughtUpgrades = [];
-  if (!gameState.completedResearch) gameState.completedResearch = [];
-  GENERATORS.forEach(g => {
-    if (!gameState.owned[g.id] || isNaN(gameState.owned[g.id])) gameState.owned[g.id] = 0;
-    if (!gameState.genMultipliers[g.id] || isNaN(gameState.genMultipliers[g.id])) gameState.genMultipliers[g.id] = 1;
-  });
-}
-
-// ===== INDEXEDDB =====
-let db;
+// ============================================================
+// INDEXEDDB
+// ============================================================
+let db = null;
 function openDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open('NeuralEmpireDB', 2);
-    req.onupgradeneeded = e => {
-      const d = e.target.result;
-      if (d.objectStoreNames.contains('save')) d.deleteObjectStore('save');
-      d.createObjectStore('save');
-    };
-    req.onsuccess = e => { db = e.target.result; res(db); };
-    req.onerror = () => rej(req.error);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('NeuralEmpire_v3', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('save');
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror = () => reject();
   });
 }
 function saveGame() {
   if (!db) return;
-  const tx = db.transaction('save', 'readwrite');
-  tx.objectStore('save').put(JSON.stringify(gameState), 'state');
+  db.transaction('save','readwrite').objectStore('save').put(JSON.stringify(S),'s');
 }
 function loadGame() {
-  return new Promise(res => {
-    if (!db) return res(false);
-    const tx = db.transaction('save', 'readonly');
-    const req = tx.objectStore('save').get('state');
+  return new Promise(resolve => {
+    if (!db) return resolve();
+    const req = db.transaction('save','readonly').objectStore('save').get('s');
     req.onsuccess = () => {
-      if (req.result) {
-        try {
-          const saved = JSON.parse(req.result);
-          // Merge into fresh default state so no field is ever missing
-          const fresh = defaultState();
-          gameState = Object.assign(fresh, saved);
-          // Restore nested objects properly
-          gameState.resources = Object.assign({ compute:0, data:0, energy:0, research:0 }, saved.resources||{});
-          gameState.owned = saved.owned || {};
-          gameState.genMultipliers = saved.genMultipliers || {};
-          gameState.boughtUpgrades = saved.boughtUpgrades || [];
-          gameState.completedResearch = saved.completedResearch || [];
-          res(true);
-        } catch(e) { res(false); }
-      } else res(false);
+      if (!req.result) return resolve();
+      try {
+        const saved = JSON.parse(req.result);
+        const base = freshState();
+        // Merge primitives
+        for (const k of ['compute','data','energy','research','totalC','totalClicks','playtime',
+                          'clickMul','globalMul','dataMul','autoClick','dataMining','metaLearn',
+                          'metaAge','prestige','prestigeMul','activeRes','resProgress']) {
+          if (saved[k] !== undefined) base[k] = saved[k];
+        }
+        // Merge objects carefully
+        if (saved.owned) for (const k of Object.keys(base.owned)) base.owned[k] = Number(saved.owned[k]||0);
+        if (saved.gm)    for (const k of Object.keys(base.gm))    base.gm[k]    = Number(saved.gm[k]||1) || 1;
+        if (Array.isArray(saved.boughtUpg)) base.boughtUpg = saved.boughtUpg;
+        if (Array.isArray(saved.doneRes))   base.doneRes   = saved.doneRes;
+        S = base;
+      } catch(e) {}
+      resolve();
     };
-    req.onerror = () => res(false);
+    req.onerror = () => resolve();
   });
 }
 
-// ===== HELPERS =====
+// ============================================================
+// HELPERS
+// ============================================================
 function fmt(n) {
-  if (n < 1000) return Math.floor(n).toString();
-  if (n < 1e6) return (n/1000).toFixed(1)+'K';
-  if (n < 1e9) return (n/1e6).toFixed(1)+'M';
+  n = Number(n) || 0;
+  if (n < 1e3)  return Math.floor(n).toString();
+  if (n < 1e6)  return (n/1e3).toFixed(1)+'K';
+  if (n < 1e9)  return (n/1e6).toFixed(1)+'M';
   if (n < 1e12) return (n/1e9).toFixed(1)+'B';
   return (n/1e12).toFixed(1)+'T';
 }
-function getOwned(id) { return gameState.owned[id]||0; }
-function getCost(gen, count) {
-  return Math.ceil(gen.baseCost * Math.pow(gen.costMult, count));
+function genCost(gen) {
+  return Math.ceil(gen.baseCost * Math.pow(gen.mult, S.owned[gen.id]||0));
 }
-function safeNum(n, fallback=1) { return (!n || isNaN(n)) ? fallback : n; }
-
-function getComputePS() {
-  let total = 0;
-  GENERATORS.forEach(g => {
-    total += safeNum(gameState.owned[g.id], 0) * g.baseCompute * safeNum(gameState.genMultipliers[g.id]);
-  });
-  total *= safeNum(gameState.globalMultiplier) * safeNum(gameState.prestigeMultiplier);
-  if (gameState.metaLearning) total *= (1 + safeNum(gameState.metaLearningAge, 0) * 0.01);
-  return isNaN(total) ? 0 : total;
+function totalCPS() {
+  let t = 0;
+  for (const g of GENS) t += (S.owned[g.id]||0) * g.cps * (S.gm[g.id]||1);
+  t *= (S.globalMul||1) * (S.prestigeMul||1);
+  if (S.metaLearn) t *= (1 + (S.metaAge||0) * 0.01);
+  return t;
 }
-function getDataPS() {
-  let total = 0;
-  GENERATORS.forEach(g => {
-    total += (gameState.owned[g.id]||0) * g.baseData * (gameState.genMultipliers[g.id]||1);
-  });
-  total *= gameState.globalMultiplier * gameState.dataMultiplier * gameState.prestigeMultiplier;
-  if (gameState.dataMining) total += getComputePS() * 0.1;
-  return total;
+function totalDPS() {
+  let t = totalCPS() * (S.dataMining ? 0.1 : 0);
+  return t * (S.dataMul||1);
 }
-function getEnergyPS() {
-  let total = 0;
-  if (!gameState.energyUnlocked) return 0;
-  GENERATORS.forEach(g => {
-    if (g.baseEnergy !== 0) total += (gameState.owned[g.id]||0) * Math.abs(g.baseEnergy) * (gameState.genMultipliers[g.id]||1);
-  });
-  total *= (1 + gameState.energyBonus);
-  return total;
+function genCPS(g) {
+  return (S.owned[g.id]||0) * g.cps * (S.gm[g.id]||1) * (S.globalMul||1) * (S.prestigeMul||1);
 }
 
-// ===== CLICK =====
-function handleClick(event) {
-  const power = gameState.clickMultiplier * gameState.prestigeMultiplier;
-  gameState.resources.compute += power;
-  gameState.totalCompute += power;
-  gameState.totalClicks++;
-
-  // floatie
-  const rect = event.target.getBoundingClientRect();
+// ============================================================
+// ACTIONS
+// ============================================================
+function doClick(e) {
+  const power = (S.clickMul||1) * (S.prestigeMul||1);
+  S.compute += power; S.totalC += power; S.totalClicks++;
   const fl = document.createElement('div');
   fl.className = 'floatie';
   fl.textContent = '+' + fmt(power) + ' 🧠';
-  fl.style.left = (event.clientX - 30) + 'px';
-  fl.style.top = (event.clientY - 20) + 'px';
+  fl.style.cssText = `left:${e.clientX-30}px;top:${e.clientY-20}px`;
   document.body.appendChild(fl);
-  setTimeout(() => fl.remove(), 1000);
-
-  updateUI();
+  setTimeout(()=>fl.remove(), 1000);
 }
 
-// ===== BUY GENERATOR =====
-function buyGenerator(id) {
-  const gen = GENERATORS.find(g => g.id === id);
-  const count = getOwned(id);
-  const cost = getCost(gen, count);
-  if (gameState.resources.compute < cost) return;
-  gameState.resources.compute -= cost;
-  gameState.owned[id] = count + 1;
-  notify(`${gen.emoji} ${gen.name} gekauft! (${count+1})`);
-  updateUI();
+function buyGen(id) {
+  const g = GENS.find(x=>x.id===id);
+  if (!g) return;
+  const totalOwned = Object.values(S.owned).reduce((a,b)=>a+b,0);
+  if (totalOwned < g.unlockAt) return;
+  const cost = genCost(g);
+  if (S.compute < cost) return;
+  S.compute -= cost;
+  S.owned[id] = (S.owned[id]||0) + 1;
+  notify(g.emoji+' '+g.name+' gekauft! ('+S.owned[id]+')');
 }
 
-// ===== BUY UPGRADE =====
-function buyUpgrade(id) {
-  if (gameState.boughtUpgrades.includes(id)) return;
-  const upg = UPGRADES.find(u => u.id === id);
-  if (gameState.resources.compute < upg.cost) return;
-  gameState.resources.compute -= upg.cost;
-  gameState.boughtUpgrades.push(id);
-  upg.effect();
-  notify(`${upg.emoji} ${upg.name} freigeschaltet!`);
-  updateUI();
+function buyUpg(id) {
+  if (S.boughtUpg.includes(id)) return;
+  const u = UPGRADES.find(x=>x.id===id);
+  if (!u || S.compute < u.cost) return;
+  S.compute -= u.cost;
+  S.boughtUpg.push(id);
+  u.fn(S);
+  notify(u.emoji+' '+u.name+' freigeschaltet!');
 }
 
-// ===== START RESEARCH =====
-function startResearch(id) {
-  if (!id) return;
-  if (gameState.activeResearch) { notify('⏳ Bereits eine Forschung aktiv!'); return; }
-  if (gameState.completedResearch.includes(id)) return;
-  const r = RESEARCH_ITEMS.find(x => x.id === id);
-  if (!r) return;
-  if (gameState.resources.research < r.cost) { notify('❌ Nicht genug Forschungspunkte!'); return; }
-  gameState.resources.research -= r.cost;
-  gameState.activeResearch = id;
-  gameState.researchProgress = 0;
-  notify(`🔬 ${r.name} gestartet!`);
-  updateUI();
+function startRes(id) {
+  if (S.activeRes) { notify('⏳ Forschung läuft bereits!'); return; }
+  if (S.doneRes.includes(id)) return;
+  const r = RESEARCH.find(x=>x.id===id);
+  if (!r || S.research < r.cost) { notify('❌ Zu wenig Forschungspunkte!'); return; }
+  S.research -= r.cost;
+  S.activeRes = id;
+  S.resProgress = 0;
+  notify('🔬 '+r.name+' gestartet!');
 }
 
-// ===== PRESTIGE =====
 function doPrestige() {
-  if (gameState.totalCompute < 1000000) return;
-  gameState.prestigeCount++;
-  gameState.prestigeMultiplier = 1 + gameState.prestigeCount * 0.25;
-  // Reset
-  gameState.resources = { compute:0, data:0, energy:0, research:0 };
-  gameState.totalCompute = 0;
-  gameState.owned = {};
-  gameState.genMultipliers = {};
-  gameState.boughtUpgrades = [];
-  gameState.completedResearch = [];
-  gameState.activeResearch = null; gameState.researchProgress = 0;
-  gameState.clickMultiplier = 1; gameState.globalMultiplier = 1;
-  gameState.dataMultiplier = 1; gameState.energyBonus = 0;
-  gameState.metaLearning = false; gameState.autoClick = false;
-  gameState.dataMining = false; gameState.energyUnlocked = false;
-  gameState.metaLearningAge = 0;
-  initState();
-  notify(`⭐ NEUSTART! Multiplikator: ×${gameState.prestigeMultiplier.toFixed(2)}`);
-  updateUI();
+  if (S.totalC < 1e6) return;
+  S.prestige++;
+  S.prestigeMul = 1 + S.prestige * 0.25;
+  const keep = {prestige:S.prestige, prestigeMul:S.prestigeMul};
+  S = freshState();
+  S.prestige = keep.prestige;
+  S.prestigeMul = keep.prestigeMul;
+  notify('⭐ NEUSTART! Multiplikator: ×'+S.prestigeMul.toFixed(2));
 }
 
-// ===== NOTIFY =====
-let notifTimer;
+// ============================================================
+// NOTIFICATION
+// ============================================================
+let notifT;
 function notify(msg) {
-  const el = document.getElementById('notification');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(notifTimer);
-  notifTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  const el = document.getElementById('notif');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(notifT);
+  notifT = setTimeout(()=>el.classList.remove('show'), 2500);
 }
 
-// ===== TAB SWITCH =====
-function switchTab(tab, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  if (btn) btn.classList.add('active');
-}
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  // Header resources
+  document.getElementById('hCompute').textContent  = fmt(S.compute);
+  document.getElementById('hData').textContent     = fmt(S.data);
+  document.getElementById('hEnergy').textContent   = fmt(S.energy);
+  document.getElementById('hResearch').textContent = fmt(S.research);
+  document.getElementById('hdPrestige').textContent = 'Prestige '+S.prestige+' ⭐';
 
-// ===== RENDER =====
-function renderGenerators() {
-  const list = document.getElementById('genList');
-  const totalOwned = Object.values(gameState.owned).reduce((a,b)=>a+b,0);
+  const cps = totalCPS();
+  document.getElementById('uCPS').textContent = fmt(cps)+'/s';
+  document.getElementById('uDPS').textContent = fmt(totalDPS())+'/s';
+  document.getElementById('uClickPow').textContent = '+'+fmt((S.clickMul||1)*(S.prestigeMul||1))+' 🧠';
 
-  GENERATORS.forEach(gen => {
-    const count = getOwned(gen.id);
-    const cost = getCost(gen, count);
-    const affordable = gameState.resources.compute >= cost;
-    const locked = totalOwned < gen.unlockAt;
-    const prod = safeNum(count,0) * gen.baseCompute * safeNum(gameState.genMultipliers[gen.id]) * safeNum(gameState.globalMultiplier) * safeNum(gameState.prestigeMultiplier);
+  // Evo text
+  const c = S.totalC;
+  let evo = '🤖 Anfänge. Klicke um Ressourcen zu sammeln!';
+  if(c>=1e7) evo='🧬 AGI-Status erreicht. Die KI entwickelt eigene Strategien.';
+  else if(c>=1e6) evo='⚛️ Quantenprozessoren aktiv. Berechnungen jenseits klassischer Physik.';
+  else if(c>=1e5) evo='🌐 Rechenzentrum verarbeitet globale Datenströme.';
+  else if(c>=1e4) evo='🔥 GPU-Farmen ermöglichen echtes Deep Learning.';
+  else if(c>=1e3) evo='🟣 Neuronale Netze lernen aus Trainingsdaten.';
+  else if(c>=100) evo='🔵 Nano-KI-Chips führen erste Berechnungen durch.';
+  document.getElementById('uEvoText').textContent = evo;
 
-    let card = list.querySelector('[data-gen-id="' + gen.id + '"]');
-    if (!card) {
-      card = document.createElement('div');
-      card.setAttribute('data-gen-id', gen.id);
-      list.appendChild(card);
-    }
-    card.className = 'gen-card' + (count>0?' owned':'') + (affordable&&!locked?' affordable':'') + (locked?' locked':'');
-    card.innerHTML = `
-      <div class="gen-top">
-        <div class="gen-name">${gen.emoji} ${gen.name}</div>
-        <div class="gen-count">${count}</div>
-      </div>
-      <div class="gen-desc">${gen.desc}</div>
-      <div class="gen-bottom">
-        <div class="gen-production">${prod>0?fmt(prod)+' 🧠/s':'—'}</div>
-        <div class="gen-cost">${fmt(cost)} 🧠</div>
-      </div>
-      ${locked?`<div class="gen-lock">🔒</div>`:''}
-    `;
-  });
-}
+  // Core emoji
+  let em='🤖';
+  if(c>=1e7)em='🌟';else if(c>=1e6)em='⚛️';else if(c>=1e5)em='🧬';else if(c>=1e4)em='🔮';
+  document.getElementById('coreEmoji').textContent = em;
 
-function renderUpgrades() {
-  const grid = document.getElementById('upgradeGrid');
-  const visible = UPGRADES.filter(u => u.req());
-  if (grid.children.length !== visible.length) {
-    grid.innerHTML = '';
-    visible.forEach(upg => {
-      const card = document.createElement('div');
-      card.setAttribute('data-upg-id', upg.id);
-      grid.appendChild(card);
-    });
-  }
-  visible.forEach(upg => {
-    const card = grid.querySelector('[data-upg-id="' + upg.id + '"]');
-    if (!card) return;
-    const bought = gameState.boughtUpgrades.includes(upg.id);
-    const affordable = gameState.resources.compute >= upg.cost && !bought;
-    card.className = 'upg-card' + (affordable?' affordable':'') + (bought?' bought':'');
-    card.innerHTML = `
-      <div class="upg-icon">${upg.emoji}</div>
-      <div class="upg-name">${upg.name}</div>
-      <div class="upg-desc">${upg.desc}</div>
-      <div class="upg-cost">${bought?'✅ Gekauft':fmt(upg.cost)+' 🧠'}</div>
-    `;
-  });
-}
+  // Prestige box
+  const canP = S.totalC >= 1e6;
+  document.getElementById('prestigeBox').style.display = canP?'block':'none';
+  if (canP) document.getElementById('uPrestigeReward').textContent =
+    '×'+(1+(S.prestige+1)*0.25).toFixed(2)+' globale Produktion';
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('upgradeGrid').addEventListener('click', e => {
-    const card = e.target.closest('[data-upg-id]');
-    if (card) buyUpgrade(card.getAttribute('data-upg-id'));
-  });
-  document.getElementById('researchList').addEventListener('click', e => {
-    const card = e.target.closest('[data-res-id]');
-    if (card) startResearch(card.getAttribute('data-res-id'));
-  });
-  document.getElementById('genList').addEventListener('click', e => {
-    const card = e.target.closest('[data-gen-id]');
-    if (card) buyGenerator(card.getAttribute('data-gen-id'));
-  });
-});
-
-function renderResearch() {
-  const list = document.getElementById('researchList');
-  const visible = RESEARCH_ITEMS.filter(r => r.req());
-
-  visible.forEach(r => {
-    const done = gameState.completedResearch.includes(r.id);
-    const active = gameState.activeResearch === r.id;
-    const affordable = gameState.resources.research >= r.cost;
-    let status = 'available', statusText = 'VERFÜGBAR';
-    if (done) { status='done'; statusText='FERTIG'; }
-    else if (active) { status='researching'; statusText='LÄUFT...'; }
-    else if (!affordable) { status='locked'; statusText=fmt(r.cost)+' 🔬'; }
-
-    let card = list.querySelector('[data-res-id="' + r.id + '"]');
-    if (!card) {
-      card = document.createElement('div');
-      card.setAttribute('data-res-id', r.id);
-      list.appendChild(card);
-    }
-    card.className = 'res-card ' + (done?'done':active?'researching':affordable?'affordable':'');
-    card.innerHTML = `
-      <div class="res-top">
-        <div class="res-name">${r.emoji} ${r.name}</div>
-        <div class="res-badge ${status}">${statusText}</div>
-      </div>
-      <div class="res-desc">${r.desc} • Dauer: ${r.time}s</div>
-      ${active?`
-        <div class="progress-bar"><div class="progress-fill" style="width:${(gameState.researchProgress/r.time*100)}%"></div></div>
-        <div class="res-info"><span>Fortschritt</span><span>${Math.floor(gameState.researchProgress)}/${r.time}s</span></div>
-      `:''}
-    `;
-  });
-}
-
-function renderStats() {
-  document.getElementById('stat-clicks').textContent = fmt(gameState.totalClicks);
-  document.getElementById('stat-totalCompute').textContent = fmt(gameState.totalCompute);
-  document.getElementById('stat-prestige').textContent = gameState.prestigeCount;
-  const mins = Math.floor(gameState.playtime / 60);
-  const hrs = Math.floor(mins / 60);
-  document.getElementById('stat-playtime').textContent = hrs > 0 ? hrs+'h '+( mins%60)+'m' : mins+'m';
-
-  const ml = document.getElementById('milestoneList');
-  ml.innerHTML = '';
-  MILESTONES.forEach(m => {
-    const done = m.req(gameState);
-    const el = document.createElement('div');
-    el.className = 'milestone' + (done?' done':'');
-    el.innerHTML = `<div class="milestone-icon">${done?'🏆':'🔒'}</div><div class="milestone-text">${m.text}</div>${done?'<div class="milestone-check">✓</div>':''}`;
-    ml.appendChild(el);
-  });
-}
-
-function getEvolutionText() {
-  const c = gameState.totalCompute;
-  const p = gameState.prestigeCount;
-  if (p >= 3) return '🌟 Ihre KI hat die Singularität erreicht und übersteigt alle menschlichen Konzepte.';
-  if (c >= 1e7) return '🧬 Ihre KI hat AGI-Status erreicht. Sie entwickelt eigene Unterziele und Strategien.';
-  if (c >= 1e6) return '⚛️ Quantenprozessoren ermöglichen Berechnungen jenseits klassischer Physik.';
-  if (c >= 1e5) return '🌐 Ihr Rechenzentrum verarbeitet globale Datenströme in Echtzeit.';
-  if (c >= 1e4) return '🔥 GPU-Farmen ermöglichen echtes Deep Learning und Mustererkennung.';
-  if (c >= 1000) return '🟣 Neuronale Netze lernen selbstständig aus Trainingsdaten.';
-  if (c >= 100) return '🔵 Nano-KI-Chips führen erste einfache Berechnungen durch.';
-  return '🤖 Deine KI befindet sich noch in den Anfängen. Klicke und sammle Ressourcen!';
-}
-
-function updateUI() {
-  const r = gameState.resources;
-  document.getElementById('res-compute').textContent = fmt(r.compute);
-  document.getElementById('res-data').textContent = fmt(r.data);
-  document.getElementById('res-energy').textContent = gameState.energyUnlocked ? fmt(r.energy) : '?';
-  document.getElementById('res-research').textContent = fmt(r.research);
-
-  const cps = getComputePS();
-  const dps = getDataPS();
-  document.getElementById('cps-compute').textContent = fmt(cps)+'/s';
-  document.getElementById('cps-data').textContent = fmt(dps)+'/s';
-  document.getElementById('clickPower').textContent = '+' + fmt(gameState.clickMultiplier * gameState.prestigeMultiplier) + ' 🧠';
-  document.getElementById('evolutionDisplay').textContent = getEvolutionText();
-  document.getElementById('prestigeDisplay').textContent = `Prestige ${gameState.prestigeCount} ⭐`;
-
-  // Prestige
-  const canPrestige = gameState.totalCompute >= 1000000;
-  const pBox = document.getElementById('prestigeBox');
-  pBox.style.display = canPrestige ? 'block' : 'none';
-  if (canPrestige) {
-    document.getElementById('prestigeReward').textContent = `×${(1+(gameState.prestigeCount+1)*0.25).toFixed(2)} globale Produktion`;
-  }
-
-  // Core emoji evolution
-  const c = gameState.totalCompute;
-  let emoji = '🤖';
-  if (c >= 1e7) emoji = '🌟';
-  else if (c >= 1e6) emoji = '⚛️';
-  else if (c >= 1e5) emoji = '🧬';
-  else if (c >= 1e4) emoji = '🔮';
-  else if (c >= 1000) emoji = '🤖';
-  document.getElementById('coreEmoji').textContent = emoji;
-
-  renderGenerators();
+  renderGens();
   renderUpgrades();
   renderResearch();
   renderStats();
 }
 
-// ===== GAME LOOP =====
-let lastTick = Date.now();
-let saveCounter = 0;
+function renderGens() {
+  const list = document.getElementById('genList');
+  const totalOwned = Object.values(S.owned).reduce((a,b)=>a+b,0);
+  for (const g of GENS) {
+    let card = list.querySelector('[data-gid="'+g.id+'"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.setAttribute('data-gid', g.id);
+      list.appendChild(card);
+    }
+    const count = S.owned[g.id]||0;
+    const cost  = genCost(g);
+    const locked   = totalOwned < g.unlockAt;
+    const canBuy   = !locked && S.compute >= cost;
+    const prod     = genCPS(g);
 
-function gameTick() {
-  const now = Date.now();
-  const dt = Math.min((now - lastTick) / 1000, 0.5);
-  lastTick = now;
+    card.className = 'gen-card'+(count>0?' owned':'')+(canBuy?' can-buy':'')+(locked?' locked':'');
+    card.innerHTML =
+      '<div class="gen-top">' +
+        '<div class="gen-name">'+g.emoji+' '+g.name+'</div>' +
+        '<div class="gen-count">'+count+'</div>' +
+      '</div>' +
+      '<div class="gen-desc">'+g.desc+'</div>' +
+      '<div class="gen-bot">' +
+        '<div class="gen-prod">'+(prod>0?fmt(prod)+' 🧠/s':'—')+'</div>' +
+        '<div class="gen-cost">'+fmt(cost)+' 🧠</div>' +
+      '</div>' +
+      (locked?'<div class="gen-lock">🔒</div>':'');
+  }
+}
 
-  gameState.playtime += dt;
-  if (gameState.metaLearning) gameState.metaLearningAge += dt / 60;
+function renderUpgrades() {
+  const grid = document.getElementById('upgGrid');
+  for (const u of UPGRADES) {
+    if (!u.req(S)) continue;
+    let card = grid.querySelector('[data-uid="'+u.id+'"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.setAttribute('data-uid', u.id);
+      grid.appendChild(card);
+    }
+    const bought   = S.boughtUpg.includes(u.id);
+    const canBuy   = !bought && S.compute >= u.cost;
+    card.className = 'upg-card'+(canBuy?' can-buy':'')+(bought?' bought':'');
+    card.innerHTML =
+      '<div class="upg-icon">'+u.emoji+'</div>' +
+      '<div class="upg-name">'+u.name+'</div>' +
+      '<div class="upg-desc">'+u.desc+'</div>' +
+      '<div class="upg-cost">'+(bought?'✅ Gekauft':fmt(u.cost)+' 🧠')+'</div>';
+  }
+}
 
-  // Production
-  const cps = getComputePS();
-  const dps = getDataPS();
-  const eps = getEnergyPS();
-  const rps = (Object.values(gameState.owned).reduce((a,b)=>a+b,0)) * 0.05 * gameState.prestigeMultiplier;
+function renderResearch() {
+  const list = document.getElementById('resList');
+  for (const r of RESEARCH) {
+    if (!r.req(S)) continue;
+    let card = list.querySelector('[data-rid="'+r.id+'"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.setAttribute('data-rid', r.id);
+      list.appendChild(card);
+    }
+    const done   = S.doneRes.includes(r.id);
+    const active = S.activeRes === r.id;
+    const canStart = !done && !active && S.research >= r.cost;
 
-  const earned = isNaN(cps) ? 0 : cps * dt;
-  gameState.resources.compute += earned;
-  gameState.totalCompute += earned;
-  gameState.resources.data += dps * dt;
-  if (gameState.energyUnlocked) gameState.resources.energy += eps * dt;
-  gameState.resources.research += rps * dt;
+    let badgeClass='badge-locked', badgeText=fmt(r.cost)+' 🔬';
+    if (done)    { badgeClass='badge-done';   badgeText='FERTIG'; }
+    else if (active) { badgeClass='badge-active'; badgeText='LÄUFT...'; }
+    else if (canStart) { badgeClass='badge-avail'; badgeText='VERFÜGBAR'; }
 
-  // Auto click
-  if (gameState.autoClick) {
-    const ac = gameState.clickMultiplier * gameState.prestigeMultiplier * dt;
-    gameState.resources.compute += ac;
-    gameState.totalCompute += ac;
+    card.className = 'res-card'+(done?' done-res':active?' active-res':canStart?' can-res':'');
+
+    let progressHTML = '';
+    if (active) {
+      const pct = Math.min(100, (S.resProgress/r.time)*100);
+      progressHTML = '<div class="pbar"><div class="pbar-fill" style="width:'+pct+'%"></div></div>' +
+        '<div class="res-info"><span>Fortschritt</span><span>'+Math.floor(S.resProgress)+'/'+r.time+'s</span></div>';
+    }
+
+    card.innerHTML =
+      '<div class="res-top">' +
+        '<div class="res-name">'+r.emoji+' '+r.name+'</div>' +
+        '<div class="res-badge '+badgeClass+'">'+badgeText+'</div>' +
+      '</div>' +
+      '<div class="res-desc">'+r.desc+' • Dauer: '+r.time+'s</div>' +
+      progressHTML;
+  }
+}
+
+function renderStats() {
+  document.getElementById('sClicks').textContent  = fmt(S.totalClicks);
+  document.getElementById('sTotalC').textContent  = fmt(S.totalC);
+  document.getElementById('sPrestige').textContent = S.prestige;
+  const mins = Math.floor(S.playtime/60);
+  document.getElementById('sTime').textContent = mins<60?mins+'m':Math.floor(mins/60)+'h '+(mins%60)+'m';
+
+  const ml = document.getElementById('milestoneList');
+  ml.innerHTML = '';
+  for (const m of MILESTONES) {
+    const done = m.req(S);
+    const el = document.createElement('div');
+    el.className = 'milestone'+(done?' done':'');
+    el.innerHTML = '<div style="font-size:18px">'+(done?'🏆':'🔒')+'</div>' +
+      '<div style="flex:1">'+m.text+'</div>'+(done?'<div style="color:var(--gold)">✓</div>':'');
+    ml.appendChild(el);
+  }
+}
+
+// ============================================================
+// EVENT DELEGATION (set once, never breaks on re-render)
+// ============================================================
+document.getElementById('aiCore').addEventListener('click', doClick);
+
+document.getElementById('mainNav').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-tab]');
+  if (!btn) return;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  btn.classList.add('active');
+});
+
+document.getElementById('genList').addEventListener('click', e => {
+  const card = e.target.closest('[data-gid]');
+  if (card) { buyGen(card.getAttribute('data-gid')); render(); }
+});
+
+document.getElementById('upgGrid').addEventListener('click', e => {
+  const card = e.target.closest('[data-uid]');
+  if (card) { buyUpg(card.getAttribute('data-uid')); render(); }
+});
+
+document.getElementById('resList').addEventListener('click', e => {
+  const card = e.target.closest('[data-rid]');
+  if (card) { startRes(card.getAttribute('data-rid')); render(); }
+});
+
+// ============================================================
+// GAME LOOP
+// ============================================================
+let lastT = 0;
+let saveTick = 0;
+
+function loop(ts) {
+  const dt = lastT ? Math.min((ts - lastT) / 1000, 0.5) : 0;
+  lastT = ts;
+
+  S.playtime += dt;
+  if (S.metaLearn) S.metaAge += dt / 60;
+
+  const cps = totalCPS();
+  S.compute  += cps * dt;
+  S.totalC   += cps * dt;
+  S.data     += totalDPS() * dt;
+  S.research += Object.values(S.owned).reduce((a,b)=>a+b,0) * 0.05 * (S.prestigeMul||1) * dt;
+
+  if (S.autoClick) {
+    const ac = (S.clickMul||1) * (S.prestigeMul||1) * dt;
+    S.compute += ac; S.totalC += ac;
   }
 
-  // Research progress
-  if (gameState.activeResearch) {
-    const r = RESEARCH_ITEMS.find(x => x.id === gameState.activeResearch);
-    gameState.researchProgress += dt;
-    if (gameState.researchProgress >= r.time) {
-      r.effect();
-      gameState.completedResearch.push(r.id);
-      gameState.activeResearch = null;
-      gameState.researchProgress = 0;
-      notify(`✅ ${r.name} abgeschlossen!`);
+  if (S.activeRes) {
+    S.resProgress += dt;
+    const r = RESEARCH.find(x=>x.id===S.activeRes);
+    if (r && S.resProgress >= r.time) {
+      r.fn(S);
+      S.doneRes.push(r.id);
+      S.activeRes = null; S.resProgress = 0;
+      notify('✅ '+r.name+' abgeschlossen!');
     }
   }
 
-  // Save every 10s
-  saveCounter += dt;
-  if (saveCounter >= 10) { saveCounter = 0; saveGame(); }
+  saveTick += dt;
+  if (saveTick >= 10) { saveTick = 0; saveGame(); }
 
-  updateUI();
-  requestAnimationFrame(gameTick);
+  render();
+  requestAnimationFrame(loop);
 }
 
-// ===== INIT =====
+// ============================================================
+// INIT
+// ============================================================
 async function init() {
   await openDB();
-  const loaded = await loadGame();
-  initState();
-  if (!loaded) notify('🎮 Willkommen bei NEURAL EMPIRE!');
-  else notify('💾 Spielstand geladen!');
-  lastTick = Date.now();
-  requestAnimationFrame(gameTick);
+  await loadGame();
+  notify('🎮 Neural Empire gestartet!');
+  requestAnimationFrame(loop);
 }
-
 init();
 </script>
 </body>
