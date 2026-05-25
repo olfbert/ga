@@ -696,7 +696,6 @@ function switchTab(tab, btn) {
 // ===== RENDER =====
 function renderGenerators() {
   const list = document.getElementById('genList');
-  list.innerHTML = '';
   const totalOwned = Object.values(gameState.owned).reduce((a,b)=>a+b,0);
 
   GENERATORS.forEach(gen => {
@@ -706,7 +705,12 @@ function renderGenerators() {
     const locked = totalOwned < gen.unlockAt;
     const prod = count * gen.baseCompute * (gameState.genMultipliers[gen.id]||1) * gameState.globalMultiplier * gameState.prestigeMultiplier;
 
-    const card = document.createElement('div');
+    let card = list.querySelector('[data-gen-id="' + gen.id + '"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.setAttribute('data-gen-id', gen.id);
+      list.appendChild(card);
+    }
     card.className = 'gen-card' + (count>0?' owned':'') + (affordable&&!locked?' affordable':'') + (locked?' locked':'');
     card.innerHTML = `
       <div class="gen-top">
@@ -720,19 +724,25 @@ function renderGenerators() {
       </div>
       ${locked?`<div class="gen-lock">🔒</div>`:''}
     `;
-    if (!locked) card.onclick = () => buyGenerator(gen.id);
-    list.appendChild(card);
   });
 }
 
 function renderUpgrades() {
   const grid = document.getElementById('upgradeGrid');
-  grid.innerHTML = '';
-  UPGRADES.forEach(upg => {
-    if (!upg.req()) return;
+  const visible = UPGRADES.filter(u => u.req());
+  if (grid.children.length !== visible.length) {
+    grid.innerHTML = '';
+    visible.forEach(upg => {
+      const card = document.createElement('div');
+      card.setAttribute('data-upg-id', upg.id);
+      grid.appendChild(card);
+    });
+  }
+  visible.forEach(upg => {
+    const card = grid.querySelector('[data-upg-id="' + upg.id + '"]');
+    if (!card) return;
     const bought = gameState.boughtUpgrades.includes(upg.id);
     const affordable = gameState.resources.compute >= upg.cost && !bought;
-    const card = document.createElement('div');
     card.className = 'upg-card' + (affordable?' affordable':'') + (bought?' bought':'');
     card.innerHTML = `
       <div class="upg-icon">${upg.emoji}</div>
@@ -740,16 +750,29 @@ function renderUpgrades() {
       <div class="upg-desc">${upg.desc}</div>
       <div class="upg-cost">${bought?'✅ Gekauft':fmt(upg.cost)+' 🧠'}</div>
     `;
-    if (!bought) card.onclick = () => buyUpgrade(upg.id);
-    grid.appendChild(card);
   });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('upgradeGrid').addEventListener('click', e => {
+    const card = e.target.closest('[data-upg-id]');
+    if (card) buyUpgrade(card.getAttribute('data-upg-id'));
+  });
+  document.getElementById('researchList').addEventListener('click', e => {
+    const card = e.target.closest('[data-res-id]');
+    if (card) startResearch(card.getAttribute('data-res-id'));
+  });
+  document.getElementById('genList').addEventListener('click', e => {
+    const card = e.target.closest('[data-gen-id]');
+    if (card) buyGenerator(card.getAttribute('data-gen-id'));
+  });
+});
+
 function renderResearch() {
   const list = document.getElementById('researchList');
-  list.innerHTML = '';
-  RESEARCH_ITEMS.forEach(r => {
-    if (!r.req()) return;
+  const visible = RESEARCH_ITEMS.filter(r => r.req());
+
+  visible.forEach(r => {
     const done = gameState.completedResearch.includes(r.id);
     const active = gameState.activeResearch === r.id;
     const affordable = gameState.resources.research >= r.cost;
@@ -758,7 +781,12 @@ function renderResearch() {
     else if (active) { status='researching'; statusText='LÄUFT...'; }
     else if (!affordable) { status='locked'; statusText=fmt(r.cost)+' 🔬'; }
 
-    const card = document.createElement('div');
+    let card = list.querySelector('[data-res-id="' + r.id + '"]');
+    if (!card) {
+      card = document.createElement('div');
+      card.setAttribute('data-res-id', r.id);
+      list.appendChild(card);
+    }
     card.className = 'res-card ' + (done?'done':active?'researching':affordable?'affordable':'');
     card.innerHTML = `
       <div class="res-top">
@@ -767,12 +795,10 @@ function renderResearch() {
       </div>
       <div class="res-desc">${r.desc} • Dauer: ${r.time}s</div>
       ${active?`
-        <div class="progress-bar"><div class="progress-fill" id="rprog-${r.id}" style="width:${(gameState.researchProgress/r.time*100)}%"></div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${(gameState.researchProgress/r.time*100)}%"></div></div>
         <div class="res-info"><span>Fortschritt</span><span>${Math.floor(gameState.researchProgress)}/${r.time}s</span></div>
       `:''}
     `;
-    if (!done && !active && affordable) card.onclick = () => startResearch(r.id);
-    list.appendChild(card);
   });
 }
 
