@@ -641,10 +641,12 @@ function buyUpgrade(id) {
 
 // ===== START RESEARCH =====
 function startResearch(id) {
-  if (gameState.activeResearch) return;
+  if (!id) return;
+  if (gameState.activeResearch) { notify('⏳ Bereits eine Forschung aktiv!'); return; }
   if (gameState.completedResearch.includes(id)) return;
   const r = RESEARCH_ITEMS.find(x => x.id === id);
-  if (gameState.resources.research < r.cost) return;
+  if (!r) return;
+  if (gameState.resources.research < r.cost) { notify('❌ Nicht genug Forschungspunkte!'); return; }
   gameState.resources.research -= r.cost;
   gameState.activeResearch = id;
   gameState.researchProgress = 0;
