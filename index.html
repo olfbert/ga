@@ -222,6 +222,40 @@ main::-webkit-scrollbar{display:none;}
 #ach-toast-desc{color:var(--text2);}
 
 .pad{height:24px;}
+
+/* OPTIONS MODAL */
+#optModal{position:fixed;inset:0;z-index:20000;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);}
+#optModal.open{display:flex;}
+#optSheet{background:linear-gradient(160deg,var(--bg2),var(--bg3));border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;max-width:430px;
+  animation:slideUp 0.28s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.opt-title{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--accent);
+  margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+.opt-close{background:rgba(0,212,255,0.1);border:1px solid var(--border);border-radius:6px;
+  color:var(--text2);font-size:18px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.opt-section{margin-bottom:14px;}
+.opt-section-title{font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:8px;font-family:'Orbitron',sans-serif;}
+.opt-row{display:flex;gap:8px;margin-bottom:8px;}
+.opt-btn{flex:1;background:rgba(0,212,255,0.08);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:10px;padding:10px 8px;cursor:pointer;font-family:'Share Tech Mono',monospace;
+  text-align:center;transition:all 0.2s;}
+.opt-btn:active{background:rgba(0,212,255,0.2);}
+.opt-btn.danger{color:var(--accent3);border-color:rgba(255,47,123,0.3);}
+.opt-btn.danger:active{background:rgba(255,47,123,0.15);}
+.opt-divider{height:1px;background:var(--border);margin:12px 0;}
+.offline-box{background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);
+  border-radius:10px;padding:12px;font-size:10px;}
+.offline-title{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--green);margin-bottom:6px;}
+.offline-val{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--accent);margin:6px 0;}
+.offline-sub{font-size:9px;color:var(--text2);}
+.opt-btn-icon{font-size:16px;display:block;margin-bottom:3px;}
+
+/* Options gear btn */
+.opt-gear{background:rgba(0,212,255,0.08);border:1px solid var(--border);border-radius:6px;
+  color:var(--text2);font-size:14px;padding:4px 8px;cursor:pointer;line-height:1;}
+.opt-gear:active{background:rgba(0,212,255,0.2);}
 </style>
 </head>
 <body>
@@ -231,6 +265,7 @@ main::-webkit-scrollbar{display:none;}
       <div class="game-title">NEURAL EMPIRE</div>
       <div class="header-right">
         <button class="save-btn" id="saveBtnEl">💾 SAVE</button>
+        <button class="opt-gear" id="optGearBtn" title="Optionen">⚙️</button>
         <div class="prestige-badge" id="hdPrestige">P0 ⭐</div>
       </div>
     </div>
@@ -356,6 +391,82 @@ main::-webkit-scrollbar{display:none;}
       <div class="pad"></div>
     </div>
   </main>
+</div>
+
+<!-- OPTIONS MODAL -->
+<div id="optModal">
+  <div id="optSheet">
+    <div class="opt-title">
+      ⚙️ OPTIONEN
+      <button class="opt-close" id="optCloseBtn">✕</button>
+    </div>
+
+    <div class="opt-section">
+      <div class="opt-section-title">OFFLINE-VERDIENST</div>
+      <div class="offline-box" id="offlineInfoBox">
+        <div class="offline-title">💤 Offline-Produktion</div>
+        <div id="offlineStatusText" style="font-size:9px;color:var(--text2);margin-bottom:8px">
+          Verdiene Ressourcen während du weg bist.
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:9px;color:var(--text2)">Status:</span>
+          <span id="offlineStatusBadge" style="font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:9px;color:var(--text2)">Effizienz:</span>
+          <span id="offlineEffText" style="font-family:Orbitron,sans-serif;font-size:11px;color:var(--accent)"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:9px;color:var(--text2)">Max. Offline-Zeit:</span>
+          <span style="font-family:Orbitron,sans-serif;font-size:11px;color:var(--accent)">8 Stunden</span>
+        </div>
+        <div id="offlineEarnedBox" style="display:none;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:10px;margin-bottom:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--text2);margin-bottom:4px">Offline verdient:</div>
+          <div id="offlineEarnedVal" style="font-family:Orbitron,sans-serif;font-size:16px;color:var(--green)">+0 🧠</div>
+          <div id="offlineEarnedTime" style="font-size:8px;color:var(--text2);margin-top:2px"></div>
+        </div>
+        <div style="font-size:8px;color:var(--text2);line-height:1.5">
+          Freischaltung: Forschung "Offline Modus" oder NP-Shop "Offline-Bonus".<br>
+          Prestige P2 schaltet 20% frei, "Offline-Bonus" NP = 50%.
+        </div>
+      </div>
+    </div>
+
+    <div class="opt-divider"></div>
+
+    <div class="opt-section">
+      <div class="opt-section-title">SPIELSTAND</div>
+      <div class="opt-row">
+        <button class="opt-btn" id="exportBtn">
+          <span class="opt-btn-icon">📤</span>EXPORTIEREN
+        </button>
+        <button class="opt-btn" id="importBtn">
+          <span class="opt-btn-icon">📥</span>IMPORTIEREN
+        </button>
+      </div>
+      <div style="font-size:8px;color:var(--text2);line-height:1.5;margin-bottom:8px">
+        Exportieren kopiert den Spielstand als Text. Importieren liest ihn wieder ein — ideal für Backups oder Gerätewechsel.
+      </div>
+      <textarea id="importArea" placeholder="Spielstand-Code hier einfügen..." 
+        style="width:100%;height:70px;background:rgba(0,0,0,0.4);border:1px solid var(--border);
+        border-radius:8px;color:var(--text);font-family:Share Tech Mono,monospace;font-size:9px;
+        padding:8px;resize:none;-webkit-user-select:auto;user-select:auto;"></textarea>
+      <button class="opt-btn" id="importConfirmBtn" style="width:100%;margin-top:6px">
+        ✅ SPIELSTAND LADEN
+      </button>
+    </div>
+
+    <div class="opt-divider"></div>
+
+    <div class="opt-section">
+      <div class="opt-section-title">GEFAHRENZONE</div>
+      <div class="opt-row">
+        <button class="opt-btn danger" id="resetBtn">
+          <span class="opt-btn-icon">🗑️</span>RESET (alles)
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="notif"></div>
@@ -655,14 +766,21 @@ function loadGame(){
         if(saved.activeRes!==undefined) base.activeRes=saved.activeRes;
         if(saved.resProgress!==undefined) base.resProgress=Number(saved.resProgress)||0;
         // Offline progress
-        if(base.offlineMode||base.npOffline){
-          const offSec=Math.min((Date.now()-base.lastSaved)/1000, 3600*8);
-          if(offSec>10){
-            const mult=base.npOffline?0.5:0.2;
-            base.compute+=totalCPSFromState(base)*offSec*mult;
-            base.totalC+=totalCPSFromState(base)*offSec*mult;
+        const offSec=Math.min((Date.now()-base.lastSaved)/1000, 3600*8);
+        let offlineEarned=0;
+        if(offSec>10){
+          let mult=0;
+          if(base.npOffline) mult=0.5;
+          else if(base.offlineMode||(base.prestige||0)>=2) mult=0.2;
+          if(mult>0){
+            const offCps=totalCPSFromState(base);
+            offlineEarned=offCps*offSec*mult;
+            base.compute+=offlineEarned;
+            base.totalC+=offlineEarned;
           }
         }
+        base._offlineEarned=offlineEarned;
+        base._offlineSec=offSec;
         S=base;
       }catch(e){}
       res();
@@ -1133,12 +1251,127 @@ function loop(ts){
 }
 
 // ================================================================
+// OPTIONS MODAL
+// ================================================================
+function openOptions(){
+  updateOfflineDisplay();
+  document.getElementById('optModal').classList.add('open');
+}
+function closeOptions(){
+  document.getElementById('optModal').classList.remove('open');
+}
+
+function updateOfflineDisplay(){
+  const hasOffline = S.offlineMode||S.npOffline||(S.prestige||0)>=2;
+  const eff = S.npOffline?50:((S.offlineMode||(S.prestige||0)>=2)?20:0);
+  const badge = document.getElementById('offlineStatusBadge');
+  const effEl = document.getElementById('offlineEffText');
+  badge.textContent = hasOffline?'AKTIV':'INAKTIV';
+  badge.style.color = hasOffline?'var(--green)':'var(--text2)';
+  badge.style.borderColor = hasOffline?'var(--green)':'var(--text2)';
+  effEl.textContent = eff+'%';
+
+  // Show offline earned if any
+  const earned = S._offlineEarned||0;
+  const sec = S._offlineSec||0;
+  const earnedBox = document.getElementById('offlineEarnedBox');
+  if(earned>0){
+    earnedBox.style.display='block';
+    document.getElementById('offlineEarnedVal').textContent='+'+fmt(earned)+' 🧠';
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s2=Math.floor(sec%60);
+    document.getElementById('offlineEarnedTime').textContent=
+      'Abwesend: '+(h>0?h+'h ':'')+m+'m '+s2+'s';
+  } else {
+    earnedBox.style.display='none';
+  }
+}
+
+function exportSave(){
+  const data = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  // Copy to clipboard
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(data).then(()=>notify('📤 Spielstand kopiert!')).catch(()=>{
+      document.getElementById('importArea').value=data;
+      notify('📋 Code ins Textfeld eingefügt');
+    });
+  } else {
+    document.getElementById('importArea').value=data;
+    notify('📋 Code ins Textfeld eingefügt — manuell kopieren');
+  }
+}
+
+function importSave(){
+  const raw = document.getElementById('importArea').value.trim();
+  if(!raw){notify('❌ Kein Code eingegeben!');return;}
+  try{
+    const decoded = decodeURIComponent(escape(atob(raw)));
+    const saved = JSON.parse(decoded);
+    // Validate it looks like a real save
+    if(saved.totalC===undefined&&saved.compute===undefined) throw new Error('invalid');
+    const base=freshState();
+    const nums=['compute','data','energy','research','totalC','totalClicks','playtime','totalData',
+                'clickMul','globalMul','dataMul','resMul','autoClickRate','metaAge',
+                'prestige','np','npBonus','startBonus','megaBoostTimer','prestigeMul','lastSaved'];
+    const bools=['clickBonus','autoClick','dataMining','metaLearn','energyRegen','offlineMode',
+                 'singBonus','npAutoClick','npOffline'];
+    for(const k of nums) if(saved[k]!==undefined) base[k]=Number(saved[k])||0;
+    for(const k of bools) if(saved[k]!==undefined) base[k]=!!saved[k];
+    if(saved.owned) for(const k of Object.keys(base.owned)) base.owned[k]=Number(saved.owned[k]||0);
+    if(saved.gm)    for(const k of Object.keys(base.gm))    base.gm[k]=Number(saved.gm[k]||1)||1;
+    if(Array.isArray(saved.boughtUpg)) base.boughtUpg=saved.boughtUpg;
+    if(Array.isArray(saved.doneRes))   base.doneRes=saved.doneRes;
+    if(Array.isArray(saved.claimedAch))base.claimedAch=saved.claimedAch;
+    if(saved.npSpent) base.npSpent=saved.npSpent;
+    if(saved.activeRes!==undefined) base.activeRes=saved.activeRes;
+    if(saved.resProgress!==undefined) base.resProgress=Number(saved.resProgress)||0;
+    S=base;
+    saveGame();
+    document.getElementById('importArea').value='';
+    closeOptions();
+    notify('✅ Spielstand erfolgreich geladen!');
+    render();
+  }catch(e){
+    notify('❌ Ungültiger Spielstand-Code!');
+  }
+}
+
+function resetAll(){
+  if(!confirm('Wirklich ALLES zurücksetzen? Dieser Vorgang kann nicht rückgängig gemacht werden!')) return;
+  S=freshState();
+  if(db) db.transaction('save','readwrite').objectStore('save').delete('s');
+  closeOptions();
+  notify('🗑️ Spielstand zurückgesetzt!');
+  render();
+}
+
+// Options event listeners (set after DOM ready)
+document.getElementById('optGearBtn').addEventListener('click', openOptions);
+document.getElementById('optCloseBtn').addEventListener('click', closeOptions);
+document.getElementById('optModal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('optModal')) closeOptions();
+});
+document.getElementById('exportBtn').addEventListener('click', exportSave);
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const ta=document.getElementById('importArea');
+  ta.focus(); ta.select();
+  notify('📥 Spielstand-Code oben einfügen, dann LADEN drücken');
+});
+document.getElementById('importConfirmBtn').addEventListener('click', importSave);
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+// ================================================================
 // INIT
 // ================================================================
 async function init(){
   await openDB();
   await loadGame();
-  notify('🎮 Neural Empire geladen!');
+  // Show offline report in options if earned
+  if((S._offlineEarned||0)>0){
+    const earned=S._offlineEarned||0;
+    notify('💤 Offline +'+fmt(earned)+' 🧠 verdient!');
+  } else {
+    notify('🎮 Neural Empire geladen!');
+  }
   requestAnimationFrame(loop);
 }
 init();
